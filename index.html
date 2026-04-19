@@ -3,28 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#f3f6fb">
+    <meta name="theme-color" content="#f2f2f7">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>MyTix POS - Premium Mobile</title>
     <style>
         :root {
-            --primary: #f97316;
-            --primary-dark: #c2410c;
-            --primary-soft: #fff4ec;
-            --bg-body: #f3f6fb;
+            --primary: #007aff;
+            --primary-dark: #005ecb;
+            --primary-soft: #eaf3ff;
+            --bg-body: #f2f2f7;
             --surface: #ffffff;
-            --text-dark: #0f172a;
-            --text-light: #64748b;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --border: #e2e8f0;
-            --radius-lg: 18px;
-            --radius-md: 14px;
-            --radius-sm: 10px;
-            --shadow-soft: 0 10px 30px -20px rgba(15, 23, 42, 0.45);
-            --header-height: 76px;
+            --surface-elevated: rgba(255, 255, 255, 0.78);
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --success: #34c759;
+            --danger: #ff3b30;
+            --border: #d1d1d6;
+            --glass-border: rgba(255, 255, 255, 0.75);
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --shadow-soft: 0 14px 32px -24px rgba(15, 23, 42, 0.45);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --header-height: calc(60px + var(--safe-top));
             --bottom-area-height: 108px;
             --app-shell-max-width: 1080px;
             --mobile-font-scale: 1;
@@ -51,9 +54,9 @@
         body {
             min-height: 100vh;
             min-height: 100dvh;
-            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #f3f6fb 55%, #eef2f9 100%);
+            background: radial-gradient(circle at 15% 0%, #ffffff 0%, #f5f7fc 48%, #edf1f8 100%);
             color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            font-family: 'SF Pro Text', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             overflow-x: hidden;
             padding-bottom: calc(var(--bottom-area-height) + env(safe-area-inset-bottom));
         }
@@ -72,50 +75,22 @@
             position: sticky;
             top: 0;
             z-index: 40;
-            background: rgba(243, 246, 251, 0.93);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
-            padding: 0.85rem 1rem;
+            background: var(--surface-elevated);
+            backdrop-filter: saturate(175%) blur(18px);
+            -webkit-backdrop-filter: saturate(175%) blur(18px);
+            border-bottom: 1px solid rgba(182, 188, 200, 0.45);
+            box-shadow: inset 0 -1px 0 var(--glass-border);
+            padding: calc(var(--safe-top) + 0.5rem) 1rem 0.48rem;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .brand-mark {
-            width: 2.625rem;
-            height: 2.625rem;
-            border-radius: 0.75rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(145deg, #ffedd5, #fff7ed);
-            color: var(--primary);
-            box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.2);
-        }
-
-        .brand-mark svg {
-            width: 1.375rem;
-            height: 1.375rem;
-            display: block;
-            flex: 0 0 auto;
-        }
-
-        .brand-copy h1 {
+        .app-title {
             color: var(--text-dark);
-            font-size: 1.04rem;
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            font-weight: 800;
-        }
-
-        .brand-copy p {
-            color: var(--text-light);
-            font-size: 0.72rem;
-            font-weight: 600;
-            margin-top: 0.1rem;
+            font-size: clamp(1rem, 2.7vw, 1.15rem);
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 auto;
         }
 
         .category-scroll {
@@ -123,11 +98,14 @@
             top: var(--header-height);
             z-index: 35;
             display: flex;
-            gap: 0.55rem;
-            padding: 0.75rem 1rem 0.55rem;
+            gap: 0.48rem;
+            padding: 0.54rem 1rem 0.62rem;
+            margin-bottom: 0.12rem;
             overflow-x: auto;
             scrollbar-width: none;
-            background: linear-gradient(180deg, rgba(243, 246, 251, 0.96), rgba(243, 246, 251, 0.9));
+            background: linear-gradient(180deg, rgba(246, 248, 253, 0.9), rgba(246, 248, 253, 0.72));
+            backdrop-filter: saturate(160%) blur(6px);
+            -webkit-backdrop-filter: saturate(160%) blur(6px);
         }
 
         .category-scroll::-webkit-scrollbar {
@@ -135,87 +113,73 @@
         }
 
         .pill {
-            border: 1px solid var(--border);
-            background: var(--surface);
+            border: 1px solid rgba(60, 60, 67, 0.2);
+            background: rgba(255, 255, 255, 0.84);
             color: var(--text-light);
             border-radius: 999px;
-            padding: 0.52rem 0.82rem;
+            padding: 0.5rem 0.84rem;
             font-size: 0.8rem;
             line-height: 1;
-            font-weight: 700;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             flex: 0 0 auto;
             cursor: pointer;
-            transition: 0.2s ease;
+            box-shadow: none;
+            transition: 0.18s ease;
         }
 
         .pill svg {
             width: 1em;
             height: 1em;
-            stroke-width: 2.2;
+            stroke-width: 2.1;
             display: block;
             flex: 0 0 auto;
         }
 
         .pill.active {
-            border-color: var(--primary);
+            border-color: transparent;
             background: var(--primary);
             color: var(--surface);
-            box-shadow: 0 8px 18px -12px rgba(249, 115, 22, 0.95);
+            box-shadow: 0 7px 14px -12px rgba(0, 122, 255, 0.55);
         }
 
         .main-content {
-            padding: 0 1rem 1rem;
-        }
-
-        .section-heading {
-            margin: 0.5rem 0 0.85rem;
-        }
-
-        .section-heading h2 {
-            font-size: 0.97rem;
-            letter-spacing: -0.01em;
-            font-weight: 800;
-        }
-
-        .section-heading p {
-            color: var(--text-light);
-            font-size: 0.78rem;
-            margin-top: 0.2rem;
-            font-weight: 500;
+            padding: 0.78rem 1rem 1rem;
         }
 
         .ticket-list {
             display: grid;
             grid-template-columns: 1fr;
             gap: 0.75rem;
+            margin-top: 0.06rem;
         }
 
         .ticket-card {
             background: var(--surface);
             display: flex;
-            border: 1px solid #e6edf7;
-            border-radius: 12px;
+            border: 1px solid rgba(171, 184, 204, 0.26);
+            border-radius: 17px;
             overflow: hidden;
             box-shadow: var(--shadow-soft);
             cursor: pointer;
             position: relative;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
         }
 
         .ticket-card:active {
-            transform: scale(0.992);
-            box-shadow: 0 8px 24px -20px rgba(15, 23, 42, 0.8);
+            transform: scale(0.994);
+            box-shadow: 0 10px 24px -22px rgba(15, 23, 42, 0.9);
+            border-color: rgba(113, 125, 146, 0.28);
         }
 
         .ticket-main {
-            padding: 0.78rem 0.78rem 0.8rem 0.85rem;
+            padding: 0.84rem 0.82rem 0.84rem 0.92rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 0.26rem;
+            gap: 0.3rem;
             min-width: 0;
         }
 
@@ -233,7 +197,7 @@
             margin: 9px 0;
             background-image: repeating-linear-gradient(
                 to bottom,
-                #d7e0ec 0 4px,
+                #d2d9e5 0 4px,
                 transparent 4px 8px
             );
         }
@@ -248,7 +212,7 @@
             border-radius: 50%;
             transform: translateX(-50%);
             background: var(--bg-body);
-            border: 1px solid #e6edf7;
+            border: 1px solid #dbe3ef;
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
         }
 
@@ -264,26 +228,26 @@
             width: max-content;
             display: inline-flex;
             align-items: center;
-            gap: 0.26rem;
-            padding: 0.18rem 0.46rem;
+            gap: 0.3rem;
+            padding: 0.21rem 0.5rem;
             border-radius: 999px;
-            font-size: 0.58rem;
+            font-size: 0.62rem;
             line-height: 1;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            background: #eff6ff;
-            color: #1d4ed8;
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: 0.01em;
+            background: #eaf3ff;
+            color: #0a63ca;
         }
 
         .ticket-meta.wisata {
-            background: #fef3c7;
-            color: #92400e;
+            background: #fff3dc;
+            color: #9a5b00;
         }
 
         .ticket-meta.kendaraan {
-            background: #ecfdf5;
-            color: #166534;
+            background: #e6f8f0;
+            color: #0f8f60;
         }
 
         .ticket-meta svg {
@@ -294,9 +258,10 @@
         }
 
         .ticket-main h3 {
-            font-size: 0.9rem;
-            line-height: 1.25;
-            letter-spacing: -0.01em;
+            font-size: 0.93rem;
+            line-height: 1.28;
+            letter-spacing: -0.015em;
+            font-weight: 650;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -304,9 +269,9 @@
         }
 
         .ticket-main p {
-            font-size: 0.72rem;
+            font-size: 0.74rem;
             color: var(--text-light);
-            line-height: 1.3;
+            line-height: 1.34;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -315,20 +280,20 @@
 
         .ticket-side {
             width: clamp(86px, 26vw, 110px);
-            padding: 0.72rem 0.56rem 0.72rem 0.35rem;
+            padding: 0.72rem 0.6rem 0.72rem 0.42rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: flex-end;
             gap: 0.1rem;
-            background: linear-gradient(170deg, #fff7ed, #ffffff);
+            background: linear-gradient(160deg, #f5f9ff, #ffffff 68%);
         }
 
         .price-label {
-            font-size: 0.57rem;
-            color: #94a3b8;
+            font-size: 0.58rem;
+            color: #8893a9;
             letter-spacing: 0.04em;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
@@ -345,15 +310,15 @@
 
         .price-currency {
             font-size: 0.62rem;
-            font-weight: 700;
-            color: #ea580c;
+            font-weight: 600;
+            color: var(--primary);
             transform: translateY(-1px);
         }
 
         .price-value {
-            font-weight: 800;
-            color: var(--primary-dark);
-            font-size: 0.92rem;
+            font-weight: 700;
+            color: #0a5ec0;
+            font-size: 0.96rem;
             letter-spacing: -0.02em;
         }
 
@@ -368,9 +333,9 @@
             padding: 1rem;
             text-align: center;
             color: var(--text-light);
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.87);
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .bottom-action {
@@ -379,17 +344,19 @@
             right: 0;
             bottom: 0;
             z-index: 100;
-            padding: 0.65rem 0.8rem calc(0.65rem + env(safe-area-inset-bottom));
+            padding: 0.56rem 0.8rem calc(0.64rem + env(safe-area-inset-bottom));
         }
 
         .bottom-action-inner {
             margin: 0 auto;
             max-width: 1080px;
-            background: rgba(255, 255, 255, 0.96);
-            border: 1px solid rgba(226, 232, 240, 0.95);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 -10px 34px -30px rgba(2, 6, 23, 0.7);
-            padding: 0.62rem;
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(176, 187, 204, 0.5);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -32px rgba(15, 23, 42, 0.8);
+            backdrop-filter: saturate(180%) blur(16px);
+            -webkit-backdrop-filter: saturate(180%) blur(16px);
+            padding: 0.58rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -407,11 +374,12 @@
             position: relative;
             background: var(--primary-soft);
             padding: 0.58rem;
-            border-radius: 0.75rem;
+            border-radius: 0.85rem;
             color: var(--primary-dark);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            box-shadow: inset 0 0 0 1px rgba(0, 122, 255, 0.12);
         }
 
         .badge-icon svg {
@@ -435,34 +403,35 @@
             border: 2px solid var(--surface);
             min-width: 1.15rem;
             text-align: center;
+            box-shadow: 0 4px 8px -6px rgba(0, 122, 255, 0.7);
         }
 
         .cart-label {
             font-size: 0.68rem;
             color: var(--text-light);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
+            font-weight: 500;
+            letter-spacing: 0;
         }
 
         .cart-total {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 0.93rem;
             margin-top: 0.05rem;
             white-space: nowrap;
+            letter-spacing: -0.012em;
         }
 
         .btn-checkout {
             border: none;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            padding: 0.75rem 1.02rem;
             min-width: 124px;
-            background: var(--primary);
+            background: linear-gradient(180deg, #1a8cff, var(--primary));
             color: var(--surface);
             font-size: 0.89rem;
-            font-weight: 800;
-            letter-spacing: 0.02em;
-            box-shadow: 0 8px 20px -14px rgba(249, 115, 22, 0.9);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            box-shadow: 0 12px 20px -16px rgba(0, 122, 255, 0.8);
             cursor: pointer;
             transition: 0.18s ease;
         }
@@ -471,20 +440,23 @@
             opacity: 0.55;
             cursor: not-allowed;
             box-shadow: none;
+            background: #b9c7da;
         }
 
         .btn-checkout:not(:disabled):active {
-            transform: translateY(1px);
+            transform: scale(0.985);
         }
 
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(17, 25, 40, 0.42);
             display: none;
             z-index: 1000;
             align-items: flex-end;
             justify-content: center;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
         }
 
         .modal.active {
@@ -492,13 +464,25 @@
         }
 
         .modal-body {
-            background: var(--surface);
+            background: rgba(248, 250, 255, 0.95);
             width: min(100%, 560px);
-            border-radius: 20px 20px 0 0;
-            padding: 1.2rem 1rem 1rem;
+            border-radius: 24px 24px 0 0;
+            border: 1px solid rgba(188, 197, 214, 0.35);
+            border-bottom: none;
+            padding: 1.38rem 1rem 1rem;
             max-height: 92vh;
             overflow-y: auto;
             animation: slide-up 0.26s ease;
+        }
+
+        .modal-body::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 5px;
+            margin: -0.55rem auto 0.82rem;
+            border-radius: 999px;
+            background: rgba(120, 130, 148, 0.34);
         }
 
         .modal-center {
@@ -508,11 +492,12 @@
 
         .modal-center .receipt-modal-card {
             width: min(100%, 390px);
-            background: var(--surface);
-            border-radius: 14px;
+            background: rgba(248, 250, 255, 0.96);
+            border: 1px solid rgba(188, 197, 214, 0.35);
+            border-radius: 18px;
             padding: 1rem;
             animation: fade-up 0.22s ease;
-            box-shadow: 0 18px 40px -30px rgba(15, 23, 42, 0.95);
+            box-shadow: 0 18px 38px -26px rgba(15, 23, 42, 0.88);
         }
 
         @keyframes slide-up {
@@ -548,52 +533,58 @@
         }
 
         .payment-header h3 {
-            font-weight: 800;
-            font-size: 1.03rem;
+            font-weight: 700;
+            font-size: 1.08rem;
             line-height: 1.25;
+            letter-spacing: -0.02em;
         }
 
         .payment-header p {
             margin-top: 0.2rem;
             color: var(--text-light);
-            font-size: 0.77rem;
-            font-weight: 500;
+            font-size: 0.79rem;
+            font-weight: 450;
         }
 
         .btn-icon {
             border: 1px solid var(--border);
-            background: #f8fafc;
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            font-size: 1.35rem;
+            background: rgba(240, 244, 251, 0.85);
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            font-size: 1.3rem;
             line-height: 1;
-            color: #64748b;
+            color: #6d7688;
             cursor: pointer;
+            transition: 0.16s ease;
+        }
+
+        .btn-icon:active {
+            transform: scale(0.96);
         }
 
         .payment-summary {
-            border: 1px solid #fee2d6;
-            background: linear-gradient(160deg, #fff7ed, #ffffff);
-            border-radius: 14px;
+            border: 1px solid #d9e8ff;
+            background: linear-gradient(160deg, #f4f8ff, #ffffff);
+            border-radius: 16px;
             padding: 0.8rem;
             text-align: center;
             margin-bottom: 1rem;
         }
 
         .payment-summary p {
-            font-size: 0.74rem;
-            letter-spacing: 0.04em;
-            font-weight: 700;
-            color: #9a3412;
-            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.01em;
+            font-weight: 600;
+            color: #426290;
+            text-transform: none;
         }
 
         .payment-summary h2 {
             margin-top: 0.2rem;
-            font-size: 1.72rem;
-            color: var(--primary-dark);
-            font-weight: 900;
+            font-size: 1.74rem;
+            color: #0457b8;
+            font-weight: 720;
             letter-spacing: -0.02em;
         }
 
@@ -604,37 +595,39 @@
         .form-group label {
             display: block;
             font-size: 0.76rem;
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-light);
             margin-bottom: 0.45rem;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         .input-box {
             width: 100%;
-            border: 2px solid var(--border);
-            border-radius: 12px;
+            border: 1.5px solid #d2d7e2;
+            background: #f4f6fb;
+            border-radius: 14px;
             padding: 0.75rem 0.85rem;
             text-align: right;
             font-size: 1.15rem;
-            font-weight: 800;
+            font-weight: 650;
             outline: none;
             transition: 0.16s ease;
         }
 
         .input-box:focus {
-            border-color: #fdba74;
-            box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.15);
+            border-color: #84bdff;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.12);
         }
 
         .shortcut-label {
             font-size: 0.76rem;
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-light);
             margin-bottom: 0.46rem;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         .shortcuts {
@@ -645,24 +638,26 @@
         }
 
         .btn-shortcut {
-            border: 1px solid var(--border);
-            background: #f8fafc;
-            color: #334155;
-            border-radius: 10px;
+            border: 1px solid #d4dae6;
+            background: #f6f8fc;
+            color: #445068;
+            border-radius: 12px;
             padding: 0.58rem 0.4rem;
             font-size: 0.73rem;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
+            transition: 0.16s ease;
         }
 
         .btn-shortcut:active {
-            background: #edf2f8;
+            background: #ecf1fa;
+            transform: scale(0.985);
         }
 
         .kembalian-box {
-            border: 1px solid #dcfce7;
-            background: #f0fdf4;
-            border-radius: 12px;
+            border: 1px solid #c8f0d7;
+            background: #eefbf3;
+            border-radius: 14px;
             padding: 0.72rem 0.8rem;
             display: flex;
             align-items: center;
@@ -671,27 +666,34 @@
         }
 
         .kembalian-label {
-            color: #166534;
+            color: #1f8f5d;
             font-size: 0.82rem;
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .kembalian-value {
             color: var(--success);
             font-size: 1rem;
-            font-weight: 800;
+            font-weight: 700;
         }
 
         .btn-confirm {
             width: 100%;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 0.85rem;
-            background: var(--primary);
+            background: linear-gradient(180deg, #1a8cff, var(--primary));
             color: var(--surface);
             font-size: 0.93rem;
-            font-weight: 800;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            box-shadow: 0 12px 20px -16px rgba(0, 122, 255, 0.85);
             cursor: pointer;
+            transition: 0.16s ease;
+        }
+
+        .btn-confirm:active {
+            transform: scale(0.99);
         }
 
         .receipt-container {
@@ -704,7 +706,7 @@
             background: #ffffff;
             padding: 0.92rem;
             color: #111827;
-            font-family: 'IBM Plex Mono', 'Consolas', monospace;
+            font-family: 'SF Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
         }
 
         .receipt-head {
@@ -829,16 +831,64 @@
 
         .receipt-actions {
             margin-top: 0.95rem;
+            display: grid;
+            gap: 0.58rem;
+        }
+
+        .btn-print-receipt {
+            width: 100%;
+            border: 1px solid #cdd7e6;
+            border-radius: 14px;
+            padding: 0.78rem 0.9rem;
+            background: #ffffff;
+            color: #2563eb;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            cursor: pointer;
+            transition: 0.16s ease;
+        }
+
+        .btn-print-receipt:active {
+            transform: scale(0.99);
+        }
+
+        .btn-print-receipt:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .btn-connect-printer {
+            width: 100%;
+            border: 1px solid #cdd7e6;
+            border-radius: 14px;
+            padding: 0.74rem 0.9rem;
+            background: #f8fafc;
+            color: #1f2937;
+            font-size: 0.83rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            cursor: pointer;
+            transition: 0.16s ease;
+        }
+
+        .btn-connect-printer:active {
+            transform: scale(0.99);
+        }
+
+        .btn-connect-printer:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
         }
 
         @media (min-width: 640px) {
             :root {
-                --header-height: 82px;
+                --header-height: calc(62px + var(--safe-top));
                 --bottom-area-height: 120px;
             }
 
             .app-header {
-                padding: 1rem 1.15rem;
+                padding: calc(var(--safe-top) + 0.54rem) 1.15rem 0.54rem;
             }
 
             .category-scroll,
@@ -875,7 +925,7 @@
             }
 
             .modal-body {
-                border-radius: 22px 22px 0 0;
+                border-radius: 26px 26px 0 0;
                 padding: 1.35rem;
             }
 
@@ -886,16 +936,12 @@
 
         @media (min-width: 920px) {
             :root {
-                --header-height: 88px;
+                --header-height: calc(64px + var(--safe-top));
                 --bottom-area-height: 132px;
             }
 
             .app-header {
-                padding: 1rem 1.25rem;
-            }
-
-            .brand-copy h1 {
-                font-size: 1.1rem;
+                padding: calc(var(--safe-top) + 0.56rem) 1.25rem 0.56rem;
             }
 
             .category-scroll,
@@ -931,7 +977,7 @@
             }
 
             .modal-body {
-                border-radius: 18px;
+                border-radius: 20px;
                 max-height: min(86vh, 700px);
             }
         }
@@ -954,6 +1000,10 @@
         body.mobile-view .ticket-list {
             grid-template-columns: 1fr;
             gap: 0.72rem;
+        }
+
+        body.mobile-view .main-content {
+            padding-top: 0.72rem;
         }
 
         body.mobile-view .ticket-main h3 {
@@ -987,21 +1037,7 @@
 <body>
     <div class="app-shell">
         <header class="app-header">
-            <div class="brand">
-                <span class="brand-mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 8.5C3 7.12 4.12 6 5.5 6h13C19.88 6 21 7.12 21 8.5v7c0 1.38-1.12 2.5-2.5 2.5h-13A2.5 2.5 0 0 1 3 15.5z"></path>
-                        <path d="M8 6v12"></path>
-                        <path d="M16 6v12"></path>
-                        <path d="M3 10h18"></path>
-                        <path d="M3 14h18"></path>
-                    </svg>
-                </span>
-                <div class="brand-copy">
-                    <h1>MYTIX PREMIUM</h1>
-                    <p>Point of Sales Ticketing</p>
-                </div>
-            </div>
+            <h1 class="app-title">MyTIX POS</h1>
         </header>
 
         <section class="category-scroll" id="category-pills" aria-label="Kategori produk">
@@ -1034,10 +1070,6 @@
         </section>
 
         <main class="main-content">
-            <div class="section-heading">
-                <h2>Daftar Tiket</h2>
-                <p>Pilih produk untuk ditambahkan ke transaksi.</p>
-            </div>
             <div class="ticket-list" id="ticket-grid"></div>
         </main>
     </div>
@@ -1106,9 +1138,14 @@
             <div class="receipt-container" id="receipt-content"></div>
             <div class="receipt-actions">
                 <button type="button" class="btn-confirm" onclick="startNewTransaction()">Transaksi Baru</button>
+                <button id="connect-printer-button" type="button" class="btn-connect-printer" onclick="connectPrinterManually()">Hubungkan Printer Bluetooth</button>
+                <button id="print-receipt-button" type="button" class="btn-print-receipt" onclick="printReceipt()" disabled>Cetak Struk (Bluetooth)</button>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@point-of-sale/receipt-printer-encoder@3.0.3/dist/receipt-printer-encoder.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@point-of-sale/webbluetooth-receipt-printer@2.0.0/dist/webbluetooth-receipt-printer.umd.js"></script>
 
     <script>
         const fallbackProducts = [
@@ -1126,23 +1163,38 @@
         };
 
         const API_TIMEOUT_MS = 15000;
+        const DEFAULT_API_EXEC_URL = 'https://script.google.com/macros/s/AKfycbx-8xlInbixQ7pVNmXEGPveNNG7YSdtlHE9GNzXKhPJd5e4XhbwYPMgqSQYmnE2B89X/exec';
+        const API_EXEC_URL = resolveApiExecUrl_();
+        const PRINTER_STORAGE_KEY = 'mytix_last_printer';
 
         let products = [];
         let cart = [];
         let grandTotal = 0;
         let activeCategory = 'all';
         let isSubmittingPayment = false;
+        let isPrintingReceipt = false;
+        let isConnectingPrinter = false;
+        let lastCompletedTransaction = null;
+        let receiptPrinter = null;
+        let printerSettings = null;
+        let connectedPrinterName = '';
+        let isPrinterConnected = false;
 
         const cashInput = document.getElementById('cash-input');
         const paymentModal = document.getElementById('payment-modal');
         const receiptModal = document.getElementById('receipt-modal');
         const confirmPaymentButton = document.getElementById('confirm-payment-button');
+        const connectPrinterButton = document.getElementById('connect-printer-button');
+        const printReceiptButton = document.getElementById('print-receipt-button');
         const rootEl = document.documentElement;
 
         function init() {
             applyResponsiveFixes();
             scheduleResponsiveRechecks();
             bindModalEvents();
+            setupBluetoothPrinter();
+            updateConnectPrinterButtonState();
+            updatePrintButtonState();
             setGridMessage('Memuat produk...');
             updateCart();
             loadProducts();
@@ -1235,8 +1287,453 @@
             rootEl.style.setProperty('--bottom-area-height', `${measuredHeight}px`);
         }
 
+        function setupBluetoothPrinter() {
+            if (typeof WebBluetoothReceiptPrinter !== 'function') {
+                connectedPrinterName = '';
+                isPrinterConnected = false;
+                return;
+            }
+
+            receiptPrinter = new WebBluetoothReceiptPrinter();
+
+            receiptPrinter.addEventListener('connected', (eventOrDevice) => {
+                applyPrinterConnection_(eventOrDevice);
+                updateConnectPrinterButtonState();
+            });
+
+            receiptPrinter.addEventListener('disconnected', () => {
+                printerSettings = null;
+                connectedPrinterName = '';
+                isPrinterConnected = false;
+                updateConnectPrinterButtonState();
+            });
+
+            updateConnectPrinterButtonState();
+        }
+
+        function extractPrinterPayload_(eventOrDevice) {
+            if (!eventOrDevice) {
+                return {};
+            }
+
+            const maybeDetail = eventOrDevice.detail && typeof eventOrDevice.detail === 'object'
+                ? eventOrDevice.detail
+                : eventOrDevice;
+
+            if (maybeDetail.device && typeof maybeDetail.device === 'object') {
+                return maybeDetail.device;
+            }
+
+            return maybeDetail;
+        }
+
+        function applyPrinterConnection_(eventOrDevice) {
+            const device = extractPrinterPayload_(eventOrDevice);
+            if (!device || typeof device !== 'object') {
+                return;
+            }
+
+            printerSettings = {
+                language: device.language || 'esc-pos',
+                codepageMapping: device.codepageMapping || undefined
+            };
+            connectedPrinterName = String(device.name || 'Printer Bluetooth');
+            isPrinterConnected = true;
+            rememberPrinter_(device);
+        }
+
+        function updatePrintButtonState() {
+            if (!printReceiptButton) {
+                return;
+            }
+
+            const hasReceipt = !!lastCompletedTransaction;
+            printReceiptButton.disabled = !hasReceipt || isPrintingReceipt;
+            printReceiptButton.innerText = isPrintingReceipt
+                ? 'Mencetak...'
+                : 'Cetak Struk (Bluetooth)';
+        }
+
+        function setPrintingState_(isPrinting) {
+            isPrintingReceipt = isPrinting;
+            updatePrintButtonState();
+        }
+
+        function updateConnectPrinterButtonState() {
+            if (!connectPrinterButton) {
+                return;
+            }
+
+            connectPrinterButton.disabled = isConnectingPrinter;
+
+            if (isConnectingPrinter) {
+                connectPrinterButton.innerText = 'Menghubungkan...';
+                return;
+            }
+
+            if (connectedPrinterName) {
+                connectPrinterButton.innerText = `Printer: ${connectedPrinterName}`;
+                return;
+            }
+
+            connectPrinterButton.innerText = 'Hubungkan Printer Bluetooth';
+        }
+
+        function setConnectingPrinterState_(isConnecting) {
+            isConnectingPrinter = isConnecting;
+            updateConnectPrinterButtonState();
+        }
+
+        function getBluetoothContextIssue_() {
+            if (!window.isSecureContext) {
+                return 'Koneksi printer Bluetooth hanya bisa di HTTPS (URL Web App GAS).';
+            }
+
+            const permissionPolicy = document.permissionsPolicy || document.featurePolicy;
+            if (permissionPolicy && typeof permissionPolicy.allowsFeature === 'function') {
+                try {
+                    if (!permissionPolicy.allowsFeature('bluetooth')) {
+                        return 'Bluetooth diblokir oleh halaman ini. Buka Web App GAS langsung di tab browser (URL /exec), bukan dari panel editor Apps Script.';
+                    }
+                } catch (error) {
+                    // Ignore permission-policy API quirks and continue checks.
+                }
+            }
+
+            if (window.top !== window.self) {
+                return 'Bluetooth tidak bisa dipakai di mode embed/panel. Buka URL deploy Web App langsung di tab baru.';
+            }
+
+            if (!navigator.bluetooth) {
+                return 'Browser belum mendukung Web Bluetooth. Gunakan Chrome Android terbaru.';
+            }
+
+            return '';
+        }
+
+        async function connectPrinterManually() {
+            if (isConnectingPrinter) {
+                return;
+            }
+
+            const contextIssue = getBluetoothContextIssue_();
+            if (contextIssue) {
+                alert(contextIssue);
+                return;
+            }
+
+            if (typeof WebBluetoothReceiptPrinter !== 'function') {
+                alert('Modul printer belum termuat. Periksa koneksi internet lalu refresh.');
+                return;
+            }
+
+            if (!receiptPrinter) {
+                setupBluetoothPrinter();
+            }
+
+            if (!receiptPrinter) {
+                alert('Inisialisasi printer Bluetooth gagal.');
+                return;
+            }
+
+            setConnectingPrinterState_(true);
+            try {
+                const device = await receiptPrinter.connect();
+                applyPrinterConnection_(device);
+                await waitForPrinterSettings_(2500);
+                if (!isPrinterConnected || !printerSettings) {
+                    throw new Error('Printer belum terhubung. Coba pilih printer lagi.');
+                }
+                alert(`Printer terhubung: ${connectedPrinterName}`);
+            } catch (error) {
+                console.error(error);
+                alert(parsePrinterError_(error));
+            } finally {
+                setConnectingPrinterState_(false);
+                updateConnectPrinterButtonState();
+            }
+        }
+
+        async function printReceipt() {
+            if (!lastCompletedTransaction) {
+                alert('Belum ada struk transaksi untuk dicetak.');
+                return;
+            }
+
+            if (isPrintingReceipt) {
+                return;
+            }
+
+            const contextIssue = getBluetoothContextIssue_();
+            if (contextIssue) {
+                alert(contextIssue);
+                return;
+            }
+
+            if (typeof ReceiptPrinterEncoder !== 'function' || typeof WebBluetoothReceiptPrinter !== 'function') {
+                alert('Modul printer belum termuat. Periksa koneksi internet lalu refresh halaman.');
+                return;
+            }
+
+            setPrintingState_(true);
+
+            try {
+                await ensureBluetoothPrinterConnected_();
+                const data = buildBluetoothReceiptData_(lastCompletedTransaction);
+                await receiptPrinter.print(data);
+                alert('Data struk berhasil dikirim ke printer Bluetooth.');
+            } catch (error) {
+                console.error(error);
+                if (error && /messageSize/i.test(String(error.message || ''))) {
+                    isPrinterConnected = false;
+                    printerSettings = null;
+                    connectedPrinterName = '';
+                    updateConnectPrinterButtonState();
+                }
+                alert(parsePrinterError_(error));
+            } finally {
+                setPrintingState_(false);
+            }
+        }
+
+        async function ensureBluetoothPrinterConnected_() {
+            if (!receiptPrinter) {
+                throw new Error('Inisialisasi printer Bluetooth gagal.');
+            }
+
+            if (isPrinterConnected && printerSettings) {
+                return;
+            }
+
+            const rememberedPrinter = getRememberedPrinter_();
+            if (rememberedPrinter && typeof receiptPrinter.reconnect === 'function') {
+                try {
+                    const reconnected = await receiptPrinter.reconnect(rememberedPrinter);
+                    applyPrinterConnection_(reconnected);
+                    await waitForPrinterSettings_(1200);
+                    if (isPrinterConnected && printerSettings) {
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Reconnect printer gagal, lanjut connect manual.', error);
+                }
+            }
+
+            const connected = await receiptPrinter.connect();
+            applyPrinterConnection_(connected);
+            await waitForPrinterSettings_(2500);
+            if (!isPrinterConnected || !printerSettings) {
+                throw new Error('Printer belum terhubung. Pilih perangkat printer lagi.');
+            }
+        }
+
+        function waitForPrinterSettings_(timeoutMs) {
+            if (isPrinterConnected && printerSettings) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                const start = Date.now();
+                const timer = window.setInterval(() => {
+                    if ((isPrinterConnected && printerSettings) || Date.now() - start >= timeoutMs) {
+                        window.clearInterval(timer);
+                        resolve();
+                    }
+                }, 120);
+            });
+        }
+
+        function getRememberedPrinter_() {
+            try {
+                const rawValue = window.localStorage.getItem(PRINTER_STORAGE_KEY);
+                if (!rawValue) {
+                    return null;
+                }
+
+                const parsedValue = JSON.parse(rawValue);
+                if (!parsedValue || typeof parsedValue !== 'object' || !parsedValue.id) {
+                    return null;
+                }
+
+                return parsedValue;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function rememberPrinter_(device) {
+            if (!device || !device.id) {
+                return;
+            }
+
+            const storableDevice = {
+                id: String(device.id),
+                name: String(device.name || ''),
+                type: String(device.type || 'bluetooth'),
+                language: String(device.language || 'esc-pos'),
+                codepageMapping: device.codepageMapping || undefined
+            };
+
+            try {
+                window.localStorage.setItem(PRINTER_STORAGE_KEY, JSON.stringify(storableDevice));
+            } catch (error) {
+                console.warn('Menyimpan device printer gagal.', error);
+            }
+        }
+
+        function parsePrinterError_(error) {
+            if (!error) {
+                return 'Gagal mencetak struk via Bluetooth.';
+            }
+
+            const rawMessage = String(error.message || '').trim();
+
+            if (/messageSize/i.test(rawMessage)) {
+                return 'Printer belum siap dipakai. Hubungkan ulang lewat tombol "Hubungkan Printer Bluetooth", lalu coba cetak lagi.';
+            }
+
+            if (error.name === 'NotFoundError') {
+                return 'Tidak ada printer yang dipilih pada dialog Bluetooth.';
+            }
+
+            if (error.name === 'SecurityError') {
+                return 'Akses Bluetooth ditolak. Pastikan gunakan HTTPS dan beri izin Bluetooth.';
+            }
+
+            if (error.name === 'NotAllowedError') {
+                return 'Akses Bluetooth ditolak oleh browser/permission.';
+            }
+
+            if (!rawMessage) {
+                return 'Gagal mencetak struk via Bluetooth.';
+            }
+
+            if (/user cancelled|cancelled|aborted/i.test(rawMessage)) {
+                return 'Pemilihan printer dibatalkan.';
+            }
+
+            return rawMessage;
+        }
+
+        function buildBluetoothReceiptData_(transaction) {
+            const encoderOptions = {};
+            if (printerSettings && printerSettings.language) {
+                encoderOptions.language = printerSettings.language;
+            }
+            if (printerSettings && printerSettings.codepageMapping) {
+                encoderOptions.codepageMapping = printerSettings.codepageMapping;
+            }
+
+            let encoder = new ReceiptPrinterEncoder(encoderOptions);
+            const width = 32;
+            const safeItems = Array.isArray(transaction.items) ? transaction.items : [];
+
+            encoder = encoder
+                .initialize()
+                .align('center')
+                .bold(true)
+                .line('MYTIX POS')
+                .bold(false)
+                .line('Official Receipt')
+                .newline()
+                .align('left')
+                .line(`No: ${sanitizePrintText_(transaction.transactionId, 26)}`)
+                .line(`Tanggal: ${sanitizePrintText_(transaction.createdAtDisplay, 22)}`)
+                .line(`Metode: ${sanitizePrintText_(transaction.paymentMethodLabel, 18)}`)
+                .line('-'.repeat(width));
+
+            safeItems.forEach((item) => {
+                const qty = toPositiveInteger(item.qty);
+                const unitPrice = toPositiveInteger(item.unitPrice);
+                const subtotal = toPositiveInteger(item.subtotal);
+
+                encoder = encoder
+                    .line(sanitizePrintText_(item.name || item.id || '-', 30))
+                    .line(formatReceiptLine_(`${qty} x ${formatReceiptAmount_(unitPrice)}`, formatReceiptAmount_(subtotal), width));
+            });
+
+            encoder = encoder
+                .line('-'.repeat(width))
+                .line(formatReceiptLine_('Total', formatReceiptAmount_(transaction.total), width))
+                .line(formatReceiptLine_('Bayar', formatReceiptAmount_(transaction.cashReceived), width))
+                .line(formatReceiptLine_('Kembalian', formatReceiptAmount_(transaction.changeAmount), width))
+                .newline()
+                .align('center')
+                .line('Terima kasih')
+                .line('Simpan struk ini')
+                .newline()
+                .cut();
+
+            return encoder.encode();
+        }
+
+        function sanitizePrintText_(value, maxLength) {
+            const cleanText = String(value || '')
+                .replace(/[\u0000-\u001f\u007f]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!maxLength || cleanText.length <= maxLength) {
+                return cleanText;
+            }
+
+            return cleanText.slice(0, maxLength);
+        }
+
+        function formatReceiptLine_(leftText, rightText, width) {
+            const safeRight = sanitizePrintText_(rightText, width - 1);
+            const maxLeftLength = Math.max(1, width - safeRight.length - 1);
+            const safeLeft = sanitizePrintText_(leftText, maxLeftLength);
+            const spacing = Math.max(1, width - safeLeft.length - safeRight.length);
+
+            return `${safeLeft}${' '.repeat(spacing)}${safeRight}`;
+        }
+
+        function formatReceiptAmount_(value) {
+            return `Rp${formatNumberID(toPositiveInteger(value))}`;
+        }
+
+        function resolveApiExecUrl_() {
+            try {
+                const queryApi = new URLSearchParams(window.location.search).get('api');
+                if (queryApi) {
+                    return normalizeApiUrl_(queryApi);
+                }
+            } catch (error) {
+                console.warn('Gagal membaca parameter query API.', error);
+            }
+
+            const globalApi = typeof window.MYTIX_API_EXEC_URL === 'string' ? window.MYTIX_API_EXEC_URL : '';
+            if (globalApi.trim()) {
+                return normalizeApiUrl_(globalApi);
+            }
+
+            return normalizeApiUrl_(DEFAULT_API_EXEC_URL);
+        }
+
+        function normalizeApiUrl_(urlValue) {
+            const normalizedValue = String(urlValue || '').trim();
+            if (!normalizedValue) {
+                return '';
+            }
+
+            return normalizedValue.replace(/[?&]$/, '');
+        }
+
+        function getBackendMode_() {
+            if (isAppsScriptRuntime()) {
+                return 'apps-script-runtime';
+            }
+
+            if (API_EXEC_URL) {
+                return 'http-api';
+            }
+
+            return 'local-fallback';
+        }
+
         function loadProducts() {
-            if (!isAppsScriptRuntime()) {
+            if (getBackendMode_() === 'local-fallback') {
                 products = fallbackProducts.map(normalizeProduct).filter(Boolean);
                 renderProducts(activeCategory);
                 return;
@@ -1263,6 +1760,14 @@
         }
 
         function callServer(methodName, ...args) {
+            if (isAppsScriptRuntime()) {
+                return callAppsScriptServer_(methodName, ...args);
+            }
+
+            return callHttpApiServer_(methodName, ...args);
+        }
+
+        function callAppsScriptServer_(methodName, ...args) {
             return new Promise((resolve, reject) => {
                 if (!isAppsScriptRuntime()) {
                     reject(new Error('Runtime Google Apps Script tidak tersedia.'));
@@ -1308,6 +1813,107 @@
 
                 runner[methodName](...args);
             });
+        }
+
+        function callHttpApiServer_(methodName, ...args) {
+            if (methodName === 'getProducts') {
+                return callHttpApi_('products');
+            }
+
+            if (methodName === 'createTransaction') {
+                const payload = args && args.length ? args[0] : {};
+                return callHttpApi_('create-transaction', payload);
+            }
+
+            return Promise.reject(new Error(`Method "${methodName}" tidak didukung di mode HTTP API.`));
+        }
+
+        async function callHttpApi_(action, payload) {
+            if (!API_EXEC_URL) {
+                throw new Error('URL API Apps Script belum diset.');
+            }
+
+            const endpointUrl = buildApiEndpointUrl_(action);
+            const controller = new AbortController();
+            const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+            try {
+                let response;
+
+                if (action === 'create-transaction') {
+                    const body = JSON.stringify({
+                        action,
+                        payload: payload || {},
+                    });
+
+                    response = await fetch(endpointUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain',
+                        },
+                        body,
+                        signal: controller.signal,
+                        cache: 'no-store',
+                    });
+                } else {
+                    response = await fetch(endpointUrl, {
+                        method: 'GET',
+                        signal: controller.signal,
+                        cache: 'no-store',
+                    });
+                }
+
+                const rawBody = await response.text();
+                if (!rawBody || !rawBody.trim()) {
+                    throw new Error('Respon API kosong.');
+                }
+
+                let parsedResponse = null;
+                try {
+                    parsedResponse = JSON.parse(rawBody);
+                } catch (error) {
+                    throw new Error('Respon API bukan JSON valid. Pastikan endpoint Apps Script sudah mode API terbaru.');
+                }
+
+                if (!response.ok) {
+                    const errorMessage = parsedResponse && parsedResponse.error && parsedResponse.error.message
+                        ? parsedResponse.error.message
+                        : `HTTP ${response.status}`;
+                    throw new Error(errorMessage);
+                }
+
+                if (!parsedResponse || typeof parsedResponse !== 'object') {
+                    throw new Error('Format respon API tidak valid.');
+                }
+
+                if (parsedResponse.ok !== true) {
+                    const errorMessage = parsedResponse.error && parsedResponse.error.message
+                        ? parsedResponse.error.message
+                        : 'Permintaan API gagal.';
+                    throw new Error(errorMessage);
+                }
+
+                return parsedResponse;
+            } catch (error) {
+                if (error && error.name === 'AbortError') {
+                    throw new Error('Permintaan API timeout.');
+                }
+
+                throw error;
+            } finally {
+                window.clearTimeout(timeoutId);
+            }
+        }
+
+        function buildApiEndpointUrl_(action) {
+            try {
+                const urlObj = new URL(API_EXEC_URL);
+                urlObj.searchParams.set('action', action);
+                return urlObj.toString();
+            } catch (error) {
+                const separator = API_EXEC_URL.includes('?') ? '&' : '?';
+                return `${API_EXEC_URL}${separator}action=${encodeURIComponent(action)}`;
+            }
         }
 
         function filterCategory(category, buttonEl) {
@@ -1521,7 +2127,7 @@
                 confirmPaymentButton.innerText = 'Memproses...';
             }
 
-            if (!isAppsScriptRuntime()) {
+            if (getBackendMode_() === 'local-fallback') {
                 const fallbackTransaction = buildLocalTransactionResult(cashValue);
                 handleSuccess(fallbackTransaction);
                 isSubmittingPayment = false;
@@ -1572,15 +2178,38 @@
             };
         }
 
-        function renderReceipt(transaction) {
-            const transactionId = escapeHtml(transaction.transactionId || buildTransactionId(new Date()));
-            const createdAt = escapeHtml(transaction.createdAtDisplay || new Date().toLocaleString('id-ID'));
-            const paymentMethodLabel = escapeHtml(transaction.paymentMethodLabel || 'Tunai');
-            const total = toPositiveInteger(transaction.total);
-            const cashReceived = toPositiveInteger(transaction.cashReceived);
-            const changeAmount = toPositiveInteger(transaction.changeAmount);
+        function normalizeTransactionForReceipt_(transaction) {
+            const safeItems = Array.isArray(transaction && transaction.items) ? transaction.items : [];
+            return {
+                transactionId: String(transaction && transaction.transactionId ? transaction.transactionId : buildTransactionId(new Date())),
+                createdAtDisplay: String(transaction && transaction.createdAtDisplay ? transaction.createdAtDisplay : new Date().toLocaleString('id-ID')),
+                paymentMethodLabel: String(transaction && transaction.paymentMethodLabel ? transaction.paymentMethodLabel : 'Tunai'),
+                total: toPositiveInteger(transaction && transaction.total),
+                cashReceived: toPositiveInteger(transaction && transaction.cashReceived),
+                changeAmount: toPositiveInteger(transaction && transaction.changeAmount),
+                items: safeItems.map((item) => ({
+                    id: String(item && item.id ? item.id : ''),
+                    name: String(item && item.name ? item.name : item && item.id ? item.id : '-'),
+                    qty: toPositiveInteger(item && item.qty),
+                    unitPrice: toPositiveInteger(item && item.unitPrice),
+                    subtotal: toPositiveInteger(item && item.subtotal)
+                }))
+            };
+        }
 
-            const safeItems = Array.isArray(transaction.items) ? transaction.items : [];
+        function renderReceipt(transaction) {
+            const normalizedTransaction = normalizeTransactionForReceipt_(transaction);
+            lastCompletedTransaction = normalizedTransaction;
+            updatePrintButtonState();
+
+            const transactionId = escapeHtml(normalizedTransaction.transactionId);
+            const createdAt = escapeHtml(normalizedTransaction.createdAtDisplay);
+            const paymentMethodLabel = escapeHtml(normalizedTransaction.paymentMethodLabel);
+            const total = normalizedTransaction.total;
+            const cashReceived = normalizedTransaction.cashReceived;
+            const changeAmount = normalizedTransaction.changeAmount;
+
+            const safeItems = normalizedTransaction.items;
             const receiptItems = safeItems.map((item) => `
                 <tr>
                     <td>
@@ -1657,6 +2286,8 @@
             clearCash();
             cart = [];
             grandTotal = 0;
+            lastCompletedTransaction = null;
+            updatePrintButtonState();
             updateCart();
         }
 

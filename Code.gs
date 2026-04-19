@@ -25,10 +25,163 @@ const PAYMENT_LABELS = Object.freeze({
   cash: 'Tunai',
 });
 
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
-    .setTitle('MyTix POS - Premium Mobile');
+function doGet(e) {
+  return routeApiRequest_('GET', e);
+}
+
+function doPost(e) {
+  return routeApiRequest_('POST', e);
+}
+
+function routeApiRequest_(method, e) {
+  try {
+    const action = resolveApiAction_(method, e);
+
+    switch (action) {
+      case 'products':
+        return jsonOutput_(getProducts());
+      case 'create-transaction':
+        if (method !== 'POST') {
+          return jsonOutput_({
+            ok: false,
+            error: {
+              code: 'method_not_allowed',
+              message: 'Gunakan metode POST untuk create-transaction.',
+            },
+          });
+        }
+
+        return jsonOutput_(createTransaction(parseCreateTransactionPayload_(e)));
+      case 'setup-db':
+        return jsonOutput_(setupDatabase());
+      case 'health':
+        return jsonOutput_({
+          ok: true,
+          data: {
+            service: 'MyTix POS API',
+            timestamp: new Date().toISOString(),
+            timezone: Session.getScriptTimeZone(),
+          },
+        });
+      default:
+        return jsonOutput_(buildApiHelp_());
+    }
+  } catch (error) {
+    return jsonOutput_({
+      ok: false,
+      error: {
+        code: 'internal_error',
+        message: error && error.message ? error.message : 'Terjadi kesalahan server.',
+      },
+    });
+  }
+}
+
+function resolveApiAction_(method, e) {
+  const parameterAction = e && e.parameter && e.parameter.action
+    ? String(e.parameter.action).trim().toLowerCase()
+    : '';
+
+  if (parameterAction) {
+    return normalizeAction_(parameterAction);
+  }
+
+  if (method === 'POST') {
+    const body = parseJsonBody_(e);
+    const bodyAction = body && body.action ? String(body.action).trim().toLowerCase() : '';
+    if (bodyAction) {
+      return normalizeAction_(bodyAction);
+    }
+  }
+
+  return 'help';
+}
+
+function normalizeAction_(rawAction) {
+  switch (rawAction) {
+    case 'products':
+    case 'get-products':
+      return 'products';
+    case 'create-transaction':
+    case 'create_transaction':
+    case 'transaction':
+      return 'create-transaction';
+    case 'setup-db':
+    case 'setup':
+      return 'setup-db';
+    case 'health':
+    case 'ping':
+      return 'health';
+    default:
+      return rawAction;
+  }
+}
+
+function parseCreateTransactionPayload_(e) {
+  const body = parseJsonBody_(e);
+  if (!body || typeof body !== 'object') {
+    throw new Error('Body request tidak valid.');
+  }
+
+  if (body.payload && typeof body.payload === 'object') {
+    return body.payload;
+  }
+
+  if (body.data && typeof body.data === 'object') {
+    return body.data;
+  }
+
+  return body;
+}
+
+function parseJsonBody_(e) {
+  if (!e || !e.postData || !e.postData.contents) {
+    return {};
+  }
+
+  const rawBody = String(e.postData.contents || '').trim();
+  if (!rawBody) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(rawBody);
+  } catch (error) {
+    throw new Error('Body request harus berupa JSON valid.');
+  }
+}
+
+function buildApiHelp_() {
+  return {
+    ok: true,
+    data: {
+      service: 'MyTix POS API',
+      usage: {
+        products: {
+          method: 'GET',
+          endpoint: '?action=products',
+        },
+        createTransaction: {
+          method: 'POST',
+          endpoint: '?action=create-transaction',
+          bodyExample: {
+            paymentMethod: 'cash',
+            cashReceived: 300000,
+            items: [
+              { id: 'w1', qty: 1 },
+              { id: 'k1', qty: 2 },
+            ],
+          },
+        },
+      },
+    },
+  };
+}
+
+function jsonOutput_(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 /**

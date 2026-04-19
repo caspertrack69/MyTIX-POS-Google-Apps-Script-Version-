@@ -1,113 +1,102 @@
-﻿# MyTIX POS by GAS
+﻿# MyTIX POS (GitHub Pages + Google Apps Script API)
 
-Aplikasi Point of Sales (POS) tiket berbasis **Google Apps Script** dengan UI mobile-friendly, database di **Google Sheets**, dan alur checkout tunai.
+MyTIX POS adalah aplikasi kasir tiket (POS) dengan frontend static di **GitHub Pages** dan backend API di **Google Apps Script** menggunakan **Google Sheets** sebagai database.
 
 ## Fitur Utama
 
-- Menampilkan daftar produk tiket per kategori.
-- Keranjang belanja dan perhitungan total otomatis.
-- Checkout pembayaran tunai + hitung kembalian.
-- Simpan transaksi ke Google Sheet (`transactions` dan `transaction_items`).
-- Seed data dummy produk otomatis saat setup awal.
-- Validasi transaksi di server (harga tidak dipercaya dari frontend).
+- List produk tiket per kategori.
+- Keranjang + checkout tunai + hitung kembalian.
+- Simpan transaksi ke Google Sheet.
+- Data produk dummy otomatis saat setup awal.
+- Cetak struk thermal Bluetooth (Web Bluetooth) dari browser yang support.
 
-## Stack Teknologi
+## Arsitektur
 
-- Frontend: HTML, CSS, Vanilla JavaScript.
-- Backend: Google Apps Script (`Code.gs`).
+1. Frontend (`index.html`) di-host di GitHub Pages.
+2. Frontend memanggil API Apps Script (`/exec?action=...`) via `fetch`.
+3. Apps Script membaca/menulis data ke Google Sheets.
+4. Printer thermal Bluetooth dipanggil langsung dari browser frontend (bukan dari Apps Script).
+
+## Stack
+
+- Frontend: HTML, CSS, Vanilla JS.
+- Backend API: Google Apps Script (`Code.gs`).
 - Database: Google Sheets.
-- Runtime Apps Script: V8.
+- Hosting frontend: GitHub Pages.
 
 ## Struktur Project
 
 ```text
-MyTIX/
-|-- index.html         # UI + client logic + call google.script.run
-|-- Code.gs            # Backend GAS + logic database + validasi transaksi
-|-- appsscript.json    # Konfigurasi runtime & timezone
+MyTIX by GAS/
+|-- index.html
+|-- Code.gs
+|-- appsscript.json
 `-- README.md
 ```
 
-## Arsitektur Singkat
+## 1) Setup Backend API (Google Apps Script)
 
-1. User membuka Web App GAS.
-2. Frontend memanggil `getProducts()` via `google.script.run`.
-3. User pilih tiket dan checkout.
-4. Frontend kirim payload minimal ke `createTransaction(payload)`.
-5. Backend validasi item, ambil harga dari sheet `products`, hitung total di server, lalu simpan ke sheet transaksi.
-6. Backend mengembalikan data transaksi final untuk ditampilkan sebagai struk.
+1. Buka [script.new](https://script.new).
+2. Isi `Code.gs` dan `appsscript.json` dari project ini.
+3. Simpan.
+4. Jalankan `setupDatabase()` sekali untuk inisialisasi DB + dummy data.
+5. Deploy sebagai Web App:
+   - `Deploy` -> `New deployment`
+   - Type: `Web app`
+   - `Execute as`: `Me`
+   - `Who has access`: `Anyone` / `Anyone with the link` (sesuai kebutuhan)
+6. Salin URL deployment `/exec`.
 
-## Prasyarat
-
-- Akun Google aktif.
-- Akses ke Google Apps Script.
-- (Opsional) Node.js + `clasp` jika ingin sync project via lokal.
-
-## Setup Cepat (Via Apps Script Editor)
-
-1. Buka [script.new](https://script.new) untuk membuat project baru.
-2. Buat file `Code.gs`, `index.html`, dan `appsscript.json`.
-3. Salin isi file dari project ini ke file yang sesuai.
-4. Simpan semua file.
-5. Jalankan fungsi `setupDatabase()` sekali dari editor Apps Script.
-6. Berikan izin akses saat diminta.
-7. Cek hasil eksekusi `setupDatabase()` untuk mendapatkan `spreadsheetUrl` database.
-8. Klik `Deploy` -> `New deployment`.
-9. Pilih tipe `Web app`.
-10. Set `Execute as`: `Me`.
-11. Set `Who has access` sesuai kebutuhan operasional.
-12. Klik `Deploy`, lalu buka URL Web App.
-
-## Setup Via CLASP (Opsional)
-
-```bash
-npm install -g @google/clasp
-clasp login
-clasp create --type standalone --title "MyTIX POS by GAS"
-clasp push
-```
-
-Setelah push, jalankan `setupDatabase()` dari editor Apps Script minimal sekali.
-
-## Database Google Sheet
-
-Saat pertama kali setup, sistem otomatis membuat spreadsheet database dan 3 sheet berikut:
-
-### 1) `products`
-
-Header:
+Contoh URL:
 
 ```text
-id | category | name | price | desc | is_active | created_at | updated_at
+https://script.google.com/macros/s/AKfycb.../exec
 ```
 
-Contoh data dummy otomatis:
+## 2) Setup Frontend (GitHub Pages)
 
-- `w1` / wisata / Tiket Terusan Dufan / 275000
-- `w2` / wisata / Tiket Ragunan / 15000
-- `k1` / kendaraan / Tiket Bus Trans / 3500
+1. Buat repository GitHub baru.
+2. Upload minimal file `index.html`.
+3. Di repo: `Settings` -> `Pages`.
+4. Source: `Deploy from a branch`.
+5. Branch: `main`, Folder: `/ (root)`.
+6. Simpan dan tunggu URL GitHub Pages aktif.
 
-### 2) `transactions`
-
-Header:
+Contoh:
 
 ```text
-transaction_id | created_at | payment_method | total | cash_received | change_amount | line_count | qty_total
+https://username.github.io/mytix-pos/
 ```
 
-### 3) `transaction_items`
+## 3) Konfigurasi URL API di Frontend
 
-Header:
+Frontend membaca URL API dari prioritas berikut:
+
+1. Query param `?api=...`
+2. Global `window.MYTIX_API_EXEC_URL`
+3. `DEFAULT_API_EXEC_URL` di `index.html`
+
+### Opsi cepat (tanpa edit file)
+
+Akses GitHub Pages dengan query param API:
 
 ```text
-transaction_id | product_id | product_name | category | qty | unit_price | subtotal
+https://username.github.io/mytix-pos/?api=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2F...%2Fexec
 ```
 
-## Kontrak Fungsi Backend
+### Opsi permanen
 
-### `getProducts()`
+Edit `DEFAULT_API_EXEC_URL` di `index.html` ke URL `/exec` milikmu.
 
-Return:
+## Endpoint API
+
+### GET produk
+
+```http
+GET /exec?action=products
+```
+
+Response:
 
 ```json
 {
@@ -124,77 +113,86 @@ Return:
 }
 ```
 
-### `createTransaction(payload)`
+### POST transaksi
 
-Payload minimal:
-
-```json
-{
-  "paymentMethod": "cash",
-  "cashReceived": 300000,
-  "items": [
-    { "id": "w1", "qty": 1 },
-    { "id": "k1", "qty": 2 }
-  ]
-}
+```http
+POST /exec?action=create-transaction
+Content-Type: text/plain
 ```
 
-Response sukses:
+Body:
 
 ```json
 {
-  "ok": true,
-  "data": {
-    "transactionId": "TRX-20260419-203010-5931",
-    "createdAtDisplay": "19/04/2026 20:30:10",
+  "action": "create-transaction",
+  "payload": {
     "paymentMethod": "cash",
-    "paymentMethodLabel": "Tunai",
-    "total": 282000,
     "cashReceived": 300000,
-    "changeAmount": 18000,
-    "items": []
+    "items": [
+      { "id": "w1", "qty": 1 },
+      { "id": "k1", "qty": 2 }
+    ]
   }
 }
 ```
 
-## Operasional Harian
+### GET health
 
-1. Tambah/ubah produk langsung di sheet `products`.
-2. Set `is_active = FALSE` untuk menonaktifkan produk tanpa menghapus histori.
-3. Pantau penjualan dari `transactions`.
-4. Lihat rincian item dari `transaction_items`.
+```http
+GET /exec?action=health
+```
 
-## Best Practices yang Dipakai
+### GET setup DB (opsional)
 
-- Validasi input transaksi di backend.
-- Perhitungan total menggunakan harga dari database (bukan dari client).
-- Sinkronisasi write transaksi pakai `LockService`.
-- Sanitasi output teks di frontend untuk mencegah injeksi HTML.
-- Fallback data lokal untuk mode non-GAS saat preview statis.
+```http
+GET /exec?action=setup-db
+```
+
+## Struktur Database Google Sheet
+
+Saat setup awal, sistem membuat 3 sheet:
+
+1. `products`
+
+```text
+id | category | name | price | desc | is_active | created_at | updated_at
+```
+
+2. `transactions`
+
+```text
+transaction_id | created_at | payment_method | total | cash_received | change_amount | line_count | qty_total
+```
+
+3. `transaction_items`
+
+```text
+transaction_id | product_id | product_name | category | qty | unit_price | subtotal
+```
+
+## Catatan Penting Bluetooth Thermal
+
+- Harus dibuka dari halaman HTTPS top-level (GitHub Pages), bukan panel preview Apps Script.
+- Gunakan browser yang mendukung Web Bluetooth (umumnya Chrome Android).
+- Jika gagal reconnect printer, hubungkan ulang via tombol `Hubungkan Printer Bluetooth`.
 
 ## Troubleshooting
 
-### Produk tidak muncul di Web App
+### Produk tidak muncul
 
-- Pastikan `setupDatabase()` sudah pernah dijalankan.
-- Pastikan sheet `products` memiliki data aktif (`is_active = TRUE`).
+- Cek URL API `/exec` benar.
+- Cek deployment Apps Script terbaru.
+- Cek endpoint `?action=health` dan `?action=products`.
 
-### Error saat checkout
+### Checkout gagal
 
-- Pastikan `cashReceived >= total`.
-- Pastikan setiap item memiliki `id` valid dan `qty > 0`.
-- Cek `Executions` di Apps Script untuk detail error.
+- Pastikan payload transaksi valid (`cashReceived`, item ID, qty).
+- Cek logs di Apps Script (`Executions`).
 
-### Perubahan kode tidak terlihat
+### Bluetooth diblokir
 
-- Lakukan redeploy versi terbaru Web App.
-- Refresh browser dan pastikan URL deployment yang dipakai adalah versi terbaru.
-
-## Pengembangan Lanjutan (Opsional)
-
-- Tambah metode pembayaran non-tunai.
-- Tambah endpoint laporan harian/mingguan.
-- Tambah role-based access untuk operator dan admin.
+- Jangan buka app dari iframe/editor panel.
+- Buka langsung URL GitHub Pages di tab browser.
 
 ## Komunitas
 
