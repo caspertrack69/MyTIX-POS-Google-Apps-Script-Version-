@@ -1022,7 +1022,7 @@
                 <span id="change-text" class="kembalian-value">Rp 0</span>
             </div>
 
-            <button type="button" class="btn-confirm" onclick="processPayment()">Konfirmasi Pembayaran</button>
+            <button id="confirm-payment-button" type="button" class="btn-confirm" onclick="processPayment()">Konfirmasi Pembayaran</button>
         </div>
     </div>
 
@@ -1036,7 +1036,7 @@
     </div>
 
     <script>
-        const products = [
+        const fallbackProducts = [
             { id: 'w1', category: 'wisata', name: 'Tiket Terusan Dufan', price: 275000, desc: 'Akses penuh ke semua wahana.' },
             { id: 'w2', category: 'wisata', name: 'Tiket Ragunan', price: 15000, desc: 'Tiket masuk dewasa.' },
             { id: 'w3', category: 'wisata', name: 'Tiket Candi Borobudur', price: 50000, desc: 'Tiket domestik area pelataran.' },
@@ -1050,17 +1050,27 @@
             kendaraan: { label: 'Kendaraan', icon: iconBus() }
         };
 
+        const API_TIMEOUT_MS = 15000;
+
+        let products = [];
         let cart = [];
         let grandTotal = 0;
+        let activeCategory = 'all';
+        let isSubmittingPayment = false;
 
         const cashInput = document.getElementById('cash-input');
         const paymentModal = document.getElementById('payment-modal');
         const receiptModal = document.getElementById('receipt-modal');
+        const confirmPaymentButton = document.getElementById('confirm-payment-button');
 
         function init() {
-            renderProducts('all');
+            bindModalEvents();
+            setGridMessage('Memuat produk...');
             updateCart();
+            loadProducts();
+        }
 
+        function bindModalEvents() {
             paymentModal.addEventListener('click', (event) => {
                 if (event.target === paymentModal) {
                     closeModal();
@@ -1081,7 +1091,83 @@
             });
         }
 
+        function loadProducts() {
+            if (!isAppsScriptRuntime()) {
+                products = fallbackProducts.map(normalizeProduct).filter(Boolean);
+                renderProducts(activeCategory);
+                return;
+            }
+
+            callServer('getProducts')
+                .then((response) => {
+                    if (!response || response.ok !== true || !Array.isArray(response.data)) {
+                        throw new Error('Respon data produk tidak valid.');
+                    }
+                    products = response.data.map(normalizeProduct).filter(Boolean);
+                    renderProducts(activeCategory);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    products = fallbackProducts.map(normalizeProduct).filter(Boolean);
+                    renderProducts(activeCategory);
+                    alert('Gagal memuat produk dari server. Aplikasi memakai data lokal sementara.');
+                });
+        }
+
+        function isAppsScriptRuntime() {
+            return typeof google !== 'undefined' && google.script && google.script.run;
+        }
+
+        function callServer(methodName, ...args) {
+            return new Promise((resolve, reject) => {
+                if (!isAppsScriptRuntime()) {
+                    reject(new Error('Runtime Google Apps Script tidak tersedia.'));
+                    return;
+                }
+
+                let settled = false;
+                const timeoutId = window.setTimeout(() => {
+                    if (!settled) {
+                        settled = true;
+                        reject(new Error('Permintaan ke server melebihi batas waktu.'));
+                    }
+                }, API_TIMEOUT_MS);
+
+                const onSuccess = (result) => {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    window.clearTimeout(timeoutId);
+                    resolve(result);
+                };
+
+                const onFailure = (error) => {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    window.clearTimeout(timeoutId);
+                    reject(new Error(error && error.message ? error.message : 'Terjadi kesalahan dari server.'));
+                };
+
+                const runner = google.script.run
+                    .withSuccessHandler(onSuccess)
+                    .withFailureHandler(onFailure);
+
+                if (typeof runner[methodName] !== 'function') {
+                    settled = true;
+                    window.clearTimeout(timeoutId);
+                    reject(new Error(`Fungsi server "${methodName}" tidak ditemukan.`));
+                    return;
+                }
+
+                runner[methodName](...args);
+            });
+        }
+
         function filterCategory(category, buttonEl) {
+            activeCategory = category;
             document.querySelectorAll('.pill').forEach((pill) => pill.classList.remove('active'));
             buttonEl.classList.add('active');
             renderProducts(category);
@@ -1091,12 +1177,17 @@
             const grid = document.getElementById('ticket-grid');
             grid.innerHTML = '';
 
+            if (!products.length) {
+                setGridMessage('Produk belum tersedia.');
+                return;
+            }
+
             const filteredProducts = category === 'all'
                 ? products
                 : products.filter((product) => product.category === category);
 
             if (!filteredProducts.length) {
-                grid.innerHTML = '<div class="empty-state">Produk untuk kategori ini belum tersedia.</div>';
+                setGridMessage('Produk untuk kategori ini belum tersedia.');
                 return;
             }
 
@@ -1128,6 +1219,37 @@
 
                 grid.appendChild(card);
             });
+        }
+
+        function setGridMessage(message) {
+            const grid = document.getElementById('ticket-grid');
+            grid.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
+        }
+
+        function normalizeProduct(rawProduct) {
+            if (!rawProduct || typeof rawProduct !== 'object') {
+                return null;
+            }
+
+            const id = String(rawProduct.id || '').trim();
+            const name = String(rawProduct.name || '').trim();
+            const category = String(rawProduct.category || 'lainnya').trim().toLowerCase();
+            const desc = String(rawProduct.desc || '').trim();
+            const price = toPositiveInteger(rawProduct.price);
+
+            if (!id || !name || price <= 0) {
+                return null;
+            }
+
+            return { id, category, name, desc, price };
+        }
+
+        function toPositiveInteger(value) {
+            const numericValue = Number(value);
+            if (!Number.isFinite(numericValue) || numericValue <= 0) {
+                return 0;
+            }
+            return Math.floor(numericValue);
         }
 
         function addToCart(item) {
@@ -1177,7 +1299,7 @@
         }
 
         function addCash(value) {
-            const current = parseInt(cashInput.value, 10) || 0;
+            const current = parseMoneyInput(cashInput.value);
             cashInput.value = current + value;
             calculateChange();
         }
@@ -1192,8 +1314,16 @@
             calculateChange();
         }
 
+        function parseMoneyInput(value) {
+            const numericValue = Number(value);
+            if (!Number.isFinite(numericValue) || numericValue <= 0) {
+                return 0;
+            }
+            return Math.floor(numericValue);
+        }
+
         function calculateChange() {
-            const cashValue = parseInt(cashInput.value, 10) || 0;
+            const cashValue = parseMoneyInput(cashInput.value);
             const changeValue = cashValue - grandTotal;
             const changeEl = document.getElementById('change-text');
 
@@ -1208,22 +1338,112 @@
         }
 
         function processPayment() {
-            const cashValue = parseInt(cashInput.value, 10) || 0;
+            if (isSubmittingPayment) {
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert('Keranjang masih kosong.');
+                return;
+            }
+
+            const cashValue = parseMoneyInput(cashInput.value);
             if (cashValue < grandTotal) {
                 alert('Nominal pembayaran kurang.');
                 cashInput.focus();
                 return;
             }
 
+            const payload = {
+                paymentMethod: 'cash',
+                cashReceived: cashValue,
+                items: cart.map((item) => ({ id: item.id, qty: item.qty }))
+            };
+
+            const handleSuccess = (transactionData) => {
+                renderReceipt(transactionData);
+                closeModal();
+                receiptModal.classList.add('active');
+                receiptModal.setAttribute('aria-hidden', 'false');
+            };
+
+            const handleFailure = (error) => {
+                alert(error.message || 'Gagal memproses pembayaran. Coba lagi.');
+            };
+
+            isSubmittingPayment = true;
+            if (confirmPaymentButton) {
+                confirmPaymentButton.disabled = true;
+                confirmPaymentButton.innerText = 'Memproses...';
+            }
+
+            if (!isAppsScriptRuntime()) {
+                const fallbackTransaction = buildLocalTransactionResult(cashValue);
+                handleSuccess(fallbackTransaction);
+                isSubmittingPayment = false;
+                if (confirmPaymentButton) {
+                    confirmPaymentButton.disabled = false;
+                    confirmPaymentButton.innerText = 'Konfirmasi Pembayaran';
+                }
+                return;
+            }
+
+            callServer('createTransaction', payload)
+                .then((response) => {
+                    if (!response || response.ok !== true || !response.data) {
+                        throw new Error('Respon transaksi dari server tidak valid.');
+                    }
+                    handleSuccess(response.data);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    handleFailure(error);
+                })
+                .finally(() => {
+                    isSubmittingPayment = false;
+                    if (confirmPaymentButton) {
+                        confirmPaymentButton.disabled = false;
+                        confirmPaymentButton.innerText = 'Konfirmasi Pembayaran';
+                    }
+                });
+        }
+
+        function buildLocalTransactionResult(cashValue) {
             const transactionDate = new Date();
-            const transactionId = buildTransactionId(transactionDate);
-            const receiptItems = cart.map((item) => `
+            return {
+                transactionId: buildTransactionId(transactionDate),
+                createdAtDisplay: transactionDate.toLocaleString('id-ID'),
+                paymentMethod: 'cash',
+                paymentMethodLabel: 'Tunai',
+                total: grandTotal,
+                cashReceived: cashValue,
+                changeAmount: cashValue - grandTotal,
+                items: cart.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    qty: item.qty,
+                    unitPrice: item.price,
+                    subtotal: item.price * item.qty
+                }))
+            };
+        }
+
+        function renderReceipt(transaction) {
+            const transactionId = escapeHtml(transaction.transactionId || buildTransactionId(new Date()));
+            const createdAt = escapeHtml(transaction.createdAtDisplay || new Date().toLocaleString('id-ID'));
+            const paymentMethodLabel = escapeHtml(transaction.paymentMethodLabel || 'Tunai');
+            const total = toPositiveInteger(transaction.total);
+            const cashReceived = toPositiveInteger(transaction.cashReceived);
+            const changeAmount = toPositiveInteger(transaction.changeAmount);
+
+            const safeItems = Array.isArray(transaction.items) ? transaction.items : [];
+            const receiptItems = safeItems.map((item) => `
                 <tr>
                     <td>
-                        <span class="receipt-item-name">${escapeHtml(item.name)}</span>
-                        <span class="receipt-item-qty">${item.qty} x ${formatIDR(item.price)}</span>
+                        <span class="receipt-item-name">${escapeHtml(item.name || item.id || '-')}</span>
+                        <span class="receipt-item-qty">${toPositiveInteger(item.qty)} x ${formatIDR(toPositiveInteger(item.unitPrice))}</span>
                     </td>
-                    <td>${formatIDR(item.price * item.qty)}</td>
+                    <td>${formatIDR(toPositiveInteger(item.subtotal))}</td>
                 </tr>
             `).join('');
 
@@ -1241,11 +1461,11 @@
                         </div>
                         <div class="receipt-meta-line">
                             <span>Tanggal</span>
-                            <strong>${transactionDate.toLocaleString('id-ID')}</strong>
+                            <strong>${createdAt}</strong>
                         </div>
                         <div class="receipt-meta-line">
                             <span>Metode</span>
-                            <strong>Tunai</strong>
+                            <strong>${paymentMethodLabel}</strong>
                         </div>
                     </div>
 
@@ -1264,15 +1484,15 @@
                     <div class="receipt-summary">
                         <div class="receipt-summary-line total">
                             <span>Total</span>
-                            <strong>${formatIDR(grandTotal)}</strong>
+                            <strong>${formatIDR(total)}</strong>
                         </div>
                         <div class="receipt-summary-line">
                             <span>Bayar</span>
-                            <strong>${formatIDR(cashValue)}</strong>
+                            <strong>${formatIDR(cashReceived)}</strong>
                         </div>
                         <div class="receipt-summary-line change">
                             <span>Kembalian</span>
-                            <strong>${formatIDR(cashValue - grandTotal)}</strong>
+                            <strong>${formatIDR(changeAmount)}</strong>
                         </div>
                     </div>
 
@@ -1281,9 +1501,6 @@
             `;
 
             document.getElementById('receipt-content').innerHTML = receiptHTML;
-            closeModal();
-            receiptModal.classList.add('active');
-            receiptModal.setAttribute('aria-hidden', 'false');
         }
 
         function closeReceipt() {
