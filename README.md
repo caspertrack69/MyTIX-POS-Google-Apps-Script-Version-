@@ -10,6 +10,16 @@ MyTIX POS adalah aplikasi kasir tiket (POS) dengan frontend static di **GitHub P
 - Data produk dummy otomatis saat setup awal.
 - Cetak struk thermal Bluetooth (Web Bluetooth) dari browser yang support.
 
+## Preview
+
+| Home | Checkout |
+| --- | --- |
+| ![MyTIX Preview Home](preview/Screenshot%202026-04-19%20232919.png) | ![MyTIX Preview Checkout](preview/Screenshot%202026-04-19%20232929.png) |
+
+| Receipt Modal | Payment Flow |
+| --- | --- |
+| ![MyTIX Preview Receipt](preview/Screenshot%202026-04-19%20232945.png) | ![MyTIX Preview Payment](preview/Screenshot%202026-04-19%20233000.png) |
+
 ## Arsitektur
 
 1. Frontend (`index.html`) di-host di GitHub Pages.
@@ -76,13 +86,11 @@ Frontend membaca URL API dari prioritas berikut:
 2. Global `window.MYTIX_API_EXEC_URL`
 3. `DEFAULT_API_EXEC_URL` di `index.html`
 
-### Opsi cepat (tanpa edit file)
+Untuk testing printer, frontend juga mendukung override query:
 
-Akses GitHub Pages dengan query param API:
-
-```text
-https://username.github.io/mytix-pos/?api=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2F...%2Fexec
-```
+- `?lang=esc-pos|star-prnt|star-line`
+- `?cp=epson|xprinter|pos-5890|mpt|star|...`
+- `?cols=32|35|42|44|48` (atur lebar kolom struk)
 
 ### Opsi permanen
 
@@ -193,6 +201,40 @@ transaction_id | product_id | product_name | category | qty | unit_price | subto
 
 - Jangan buka app dari iframe/editor panel.
 - Buka langsung URL GitHub Pages di tab browser.
+
+### Error `Unknown codepage mapping`
+
+1. Hard refresh halaman GitHub Pages (`Ctrl+F5`) untuk memastikan JS terbaru ter-load.
+2. Reconnect printer lewat tombol `Hubungkan Printer Bluetooth`.
+3. Coba pakai override mapping di URL:
+
+```text
+https://username.github.io/mytix-pos/?cp=epson
+```
+
+atau:
+
+```text
+https://username.github.io/mytix-pos/?cp=xprinter
+```
+
+4. Jika printer Star mode, coba set language:
+
+```text
+https://username.github.io/mytix-pos/?lang=star-prnt
+```
+
+5. Jika hasil cetak kurang proporsional, coba sesuaikan kolom:
+
+```text
+https://username.github.io/mytix-pos/?cols=42
+```
+
+atau:
+
+```text
+https://username.github.io/mytix-pos/?cols=48
+```
 
 ## Komunitas
 

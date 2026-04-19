@@ -99,13 +99,14 @@
             z-index: 35;
             display: flex;
             gap: 0.48rem;
-            padding: 0.54rem 1rem 0.62rem;
-            margin-bottom: 0.12rem;
+            padding: 0.56rem 1rem 0.82rem;
+            margin-bottom: 0.42rem;
             overflow-x: auto;
             scrollbar-width: none;
-            background: linear-gradient(180deg, rgba(246, 248, 253, 0.9), rgba(246, 248, 253, 0.72));
-            backdrop-filter: saturate(160%) blur(6px);
-            -webkit-backdrop-filter: saturate(160%) blur(6px);
+            background: rgba(246, 248, 253, 0.98);
+            border-bottom: 1px solid rgba(199, 208, 221, 0.72);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
 
         .category-scroll::-webkit-scrollbar {
@@ -146,14 +147,14 @@
         }
 
         .main-content {
-            padding: 0.78rem 1rem 1rem;
+            padding: 0.5rem 1rem 1rem;
         }
 
         .ticket-list {
             display: grid;
             grid-template-columns: 1fr;
             gap: 0.75rem;
-            margin-top: 0.06rem;
+            margin-top: 0;
         }
 
         .ticket-card {
@@ -1003,7 +1004,7 @@
         }
 
         body.mobile-view .main-content {
-            padding-top: 0.72rem;
+            padding-top: 0.88rem;
         }
 
         body.mobile-view .ticket-main h3 {
@@ -1163,9 +1164,43 @@
         };
 
         const API_TIMEOUT_MS = 15000;
-        const DEFAULT_API_EXEC_URL = 'https://script.google.com/macros/s/AKfycbx-8xlInbixQ7pVNmXEGPveNNG7YSdtlHE9GNzXKhPJd5e4XhbwYPMgqSQYmnE2B89X/exec';
+        const DEFAULT_API_EXEC_URL = ''; //input your API execution URL here if needed, or leave empty to auto-resolve
         const API_EXEC_URL = resolveApiExecUrl_();
         const PRINTER_STORAGE_KEY = 'mytix_last_printer';
+        const FORCED_PRINTER_LANGUAGE = resolveQueryParam_('lang');
+        const FORCED_CODEPAGE_MAPPING = resolveQueryParam_('cp');
+        const RECEIPT_COLUMNS_DEFAULT = 32;
+        const RECEIPT_COLUMNS_SUPPORTED = {
+            32: true,
+            35: true,
+            42: true,
+            44: true,
+            48: true
+        };
+        const FORCED_RECEIPT_COLUMNS = normalizeReceiptColumns_(resolveQueryParam_('cols'));
+        const SUPPORTED_CODEPAGE_MAPPINGS = {
+            'bixolon': true,
+            'bixolon-legacy': true,
+            'citizen': true,
+            'epson': true,
+            'epson-legacy': true,
+            'fujitsu': true,
+            'hp': true,
+            'metapace': true,
+            'mpt': true,
+            'pos-5890': true,
+            'pos-8360': true,
+            'star': true,
+            'xprinter': true,
+            'youku': true
+        };
+        const CODEPAGE_MAPPING_ALIASES = {
+            'bixolonlegacy': 'bixolon-legacy',
+            'epsonlegacy': 'epson-legacy',
+            'pos5890': 'pos-5890',
+            'pos8360': 'pos-8360',
+            'zjiang': 'pos-5890'
+        };
 
         let products = [];
         let cart = [];
@@ -1241,6 +1276,7 @@
             document.body.classList.toggle('mobile-view', isMobileView);
             document.body.classList.toggle('mobile-desktop-viewport', isMobileView && hasDesktopViewportMismatch);
             rootEl.style.setProperty('--mobile-font-scale', String(viewportScale));
+            syncStickyOffsets_();
             syncBottomAreaHeight();
         }
 
@@ -1285,6 +1321,18 @@
 
             const measuredHeight = Math.ceil(bottomActionInner.getBoundingClientRect().height + 24);
             rootEl.style.setProperty('--bottom-area-height', `${measuredHeight}px`);
+        }
+
+        function syncStickyOffsets_() {
+            const appHeader = document.querySelector('.app-header');
+            if (!appHeader) {
+                return;
+            }
+
+            const measuredHeaderHeight = Math.ceil(appHeader.getBoundingClientRect().height);
+            if (measuredHeaderHeight > 0) {
+                rootEl.style.setProperty('--header-height', `${measuredHeaderHeight}px`);
+            }
         }
 
         function setupBluetoothPrinter() {
@@ -1333,9 +1381,13 @@
                 return;
             }
 
+            const normalizedLanguage = normalizePrinterLanguage_(device.language || 'esc-pos');
+            const normalizedCodepageMapping = normalizeCodepageMapping_(device.codepageMapping);
+            const normalizedColumns = normalizeReceiptColumns_(device.columns);
             printerSettings = {
-                language: device.language || 'esc-pos',
-                codepageMapping: device.codepageMapping || undefined
+                language: normalizedLanguage,
+                codepageMapping: normalizedCodepageMapping || undefined,
+                columns: normalizedColumns || undefined
             };
             connectedPrinterName = String(device.name || 'Printer Bluetooth');
             isPrinterConnected = true;
@@ -1555,7 +1607,18 @@
                     return null;
                 }
 
-                return parsedValue;
+                const normalizedLanguage = normalizePrinterLanguage_(parsedValue.language || 'esc-pos');
+                const normalizedCodepageMapping = normalizeCodepageMapping_(parsedValue.codepageMapping);
+                const normalizedColumns = normalizeReceiptColumns_(parsedValue.columns);
+
+                return {
+                    id: String(parsedValue.id),
+                    name: String(parsedValue.name || ''),
+                    type: String(parsedValue.type || 'bluetooth'),
+                    language: normalizedLanguage,
+                    codepageMapping: normalizedCodepageMapping || undefined,
+                    columns: normalizedColumns || undefined
+                };
             } catch (error) {
                 return null;
             }
@@ -1566,12 +1629,16 @@
                 return;
             }
 
+            const normalizedLanguage = normalizePrinterLanguage_(device.language || 'esc-pos');
+            const normalizedCodepageMapping = normalizeCodepageMapping_(device.codepageMapping);
+            const normalizedColumns = normalizeReceiptColumns_(device.columns || (printerSettings && printerSettings.columns));
             const storableDevice = {
                 id: String(device.id),
                 name: String(device.name || ''),
                 type: String(device.type || 'bluetooth'),
-                language: String(device.language || 'esc-pos'),
-                codepageMapping: device.codepageMapping || undefined
+                language: normalizedLanguage,
+                codepageMapping: normalizedCodepageMapping || undefined,
+                columns: normalizedColumns || undefined
             };
 
             try {
@@ -1590,6 +1657,10 @@
 
             if (/messageSize/i.test(rawMessage)) {
                 return 'Printer belum siap dipakai. Hubungkan ulang lewat tombol "Hubungkan Printer Bluetooth", lalu coba cetak lagi.';
+            }
+
+            if (/unknown codepage mapping/i.test(rawMessage)) {
+                return 'Codepage printer tidak dikenali. Sistem sudah mencoba fallback otomatis, coba hubungkan ulang printer lalu cetak lagi.';
             }
 
             if (error.name === 'NotFoundError') {
@@ -1616,16 +1687,31 @@
         }
 
         function buildBluetoothReceiptData_(transaction) {
-            const encoderOptions = {};
-            if (printerSettings && printerSettings.language) {
-                encoderOptions.language = printerSettings.language;
+            const width = getReceiptColumns_();
+            let encoder = null;
+            try {
+                encoder = createReceiptEncoder_();
+            } catch (error) {
+                console.warn('Encoder setup fallback dipakai:', error);
+                try {
+                    encoder = new ReceiptPrinterEncoder({
+                        language: 'esc-pos',
+                        columns: width,
+                        codepageMapping: 'epson'
+                    });
+                } catch (fallbackError) {
+                    console.warn('Fallback epson gagal, pakai default encoder.', fallbackError);
+                    try {
+                        encoder = new ReceiptPrinterEncoder({
+                            language: 'esc-pos',
+                            columns: width
+                        });
+                    } catch (finalError) {
+                        console.warn('Fallback esc-pos gagal, pakai konfigurasi encoder default.', finalError);
+                        encoder = new ReceiptPrinterEncoder({ columns: width });
+                    }
+                }
             }
-            if (printerSettings && printerSettings.codepageMapping) {
-                encoderOptions.codepageMapping = printerSettings.codepageMapping;
-            }
-
-            let encoder = new ReceiptPrinterEncoder(encoderOptions);
-            const width = 32;
             const safeItems = Array.isArray(transaction.items) ? transaction.items : [];
 
             encoder = encoder
@@ -1637,24 +1723,30 @@
                 .line('Official Receipt')
                 .newline()
                 .align('left')
-                .line(`No: ${sanitizePrintText_(transaction.transactionId, 26)}`)
-                .line(`Tanggal: ${sanitizePrintText_(transaction.createdAtDisplay, 22)}`)
-                .line(`Metode: ${sanitizePrintText_(transaction.paymentMethodLabel, 18)}`)
+                .line(`No: ${sanitizePrintText_(transaction.transactionId, Math.max(10, width - 4))}`)
+                .line(`Tanggal: ${sanitizePrintText_(transaction.createdAtDisplay, Math.max(10, width - 9))}`)
+                .line(`Metode: ${sanitizePrintText_(transaction.paymentMethodLabel, Math.max(8, width - 8))}`)
                 .line('-'.repeat(width));
 
             safeItems.forEach((item) => {
                 const qty = toPositiveInteger(item.qty);
                 const unitPrice = toPositiveInteger(item.unitPrice);
                 const subtotal = toPositiveInteger(item.subtotal);
+                const itemNameLines = wrapReceiptText_(item.name || item.id || '-', width);
+
+                itemNameLines.forEach((lineText) => {
+                    encoder = encoder.line(lineText);
+                });
 
                 encoder = encoder
-                    .line(sanitizePrintText_(item.name || item.id || '-', 30))
-                    .line(formatReceiptLine_(`${qty} x ${formatReceiptAmount_(unitPrice)}`, formatReceiptAmount_(subtotal), width));
+                    .line(formatReceiptLine_(`  ${qty} x ${formatReceiptAmountCompact_(unitPrice)}`, formatReceiptAmountCompact_(subtotal), width));
             });
 
             encoder = encoder
                 .line('-'.repeat(width))
-                .line(formatReceiptLine_('Total', formatReceiptAmount_(transaction.total), width))
+                .bold(true)
+                .line(formatReceiptLine_('TOTAL', formatReceiptAmount_(transaction.total), width))
+                .bold(false)
                 .line(formatReceiptLine_('Bayar', formatReceiptAmount_(transaction.cashReceived), width))
                 .line(formatReceiptLine_('Kembalian', formatReceiptAmount_(transaction.changeAmount), width))
                 .newline()
@@ -1665,6 +1757,132 @@
                 .cut();
 
             return encoder.encode();
+        }
+
+        function normalizePrinterLanguage_(languageValue) {
+            const normalized = String(languageValue || '').trim().toLowerCase();
+            if (!normalized) {
+                return 'esc-pos';
+            }
+
+            if (normalized === 'star-prnt') {
+                return 'star-prnt';
+            }
+
+            if (normalized === 'star-line') {
+                return 'star-line';
+            }
+
+            return 'esc-pos';
+        }
+
+        function normalizeReceiptColumns_(value) {
+            const numericValue = Number(value);
+            if (!Number.isFinite(numericValue)) {
+                return 0;
+            }
+
+            const roundedValue = Math.round(numericValue);
+            if (!RECEIPT_COLUMNS_SUPPORTED[roundedValue]) {
+                return 0;
+            }
+
+            return roundedValue;
+        }
+
+        function getReceiptColumns_() {
+            if (FORCED_RECEIPT_COLUMNS) {
+                return FORCED_RECEIPT_COLUMNS;
+            }
+
+            const connectedColumns = normalizeReceiptColumns_(printerSettings && printerSettings.columns);
+            if (connectedColumns) {
+                return connectedColumns;
+            }
+
+            return RECEIPT_COLUMNS_DEFAULT;
+        }
+
+        function normalizeCodepageMapping_(mappingValue) {
+            if (mappingValue && typeof mappingValue === 'object' && !Array.isArray(mappingValue)) {
+                const customMapping = sanitizeCustomCodepageMapping_(mappingValue);
+                return customMapping || '';
+            }
+
+            const normalized = String(mappingValue || '').trim().toLowerCase();
+            if (!normalized || normalized === 'default' || normalized === 'auto' || normalized === 'unknown' || normalized === 'none') {
+                return '';
+            }
+
+            const mappedAlias = CODEPAGE_MAPPING_ALIASES[normalized] || normalized;
+            if (!SUPPORTED_CODEPAGE_MAPPINGS[mappedAlias]) {
+                return '';
+            }
+
+            return mappedAlias;
+        }
+
+        function sanitizeCustomCodepageMapping_(mappingObject) {
+            const safeMapping = {};
+            const keys = Object.keys(mappingObject || {});
+            keys.forEach((key) => {
+                const normalizedKey = String(key || '').trim().toLowerCase();
+                const rawValue = mappingObject[key];
+                const numericValue = Number(rawValue);
+                if (/^cp\d+$/i.test(normalizedKey) && Number.isFinite(numericValue) && numericValue >= 0) {
+                    safeMapping[normalizedKey] = numericValue;
+                }
+            });
+
+            return Object.keys(safeMapping).length ? safeMapping : null;
+        }
+
+        function createReceiptEncoder_() {
+            const connectedLanguage = normalizePrinterLanguage_(printerSettings && printerSettings.language);
+            const forcedLanguage = normalizePrinterLanguage_(FORCED_PRINTER_LANGUAGE);
+            const language = FORCED_PRINTER_LANGUAGE ? forcedLanguage : connectedLanguage;
+            const forcedMapping = normalizeCodepageMapping_(FORCED_CODEPAGE_MAPPING);
+            const preferredMapping = forcedMapping || normalizeCodepageMapping_(printerSettings && printerSettings.codepageMapping);
+            const columns = getReceiptColumns_();
+            const attempts = [];
+
+            if (preferredMapping) {
+                attempts.push({ language, columns, codepageMapping: preferredMapping });
+            }
+
+            if (language === 'esc-pos') {
+                attempts.push({ language, columns, codepageMapping: 'epson' });
+                attempts.push({ language, columns, codepageMapping: 'xprinter' });
+                attempts.push({ language, columns, codepageMapping: 'pos-5890' });
+                attempts.push({ language, columns, codepageMapping: 'mpt' });
+                attempts.push({ language, columns, codepageMapping: 'star' });
+            }
+
+            attempts.push({ language, columns });
+            attempts.push({ columns });
+            attempts.push({ language });
+            attempts.push({});
+
+            const seen = {};
+            for (const option of attempts) {
+                const key = JSON.stringify(option);
+                if (seen[key]) {
+                    continue;
+                }
+                seen[key] = true;
+
+                try {
+                    return new ReceiptPrinterEncoder(option);
+                } catch (error) {
+                    const message = String(error && error.message ? error.message : '');
+                    if (/unknown codepage mapping/i.test(message)) {
+                        continue;
+                    }
+                    throw error;
+                }
+            }
+
+            return new ReceiptPrinterEncoder();
         }
 
         function sanitizePrintText_(value, maxLength) {
@@ -1680,6 +1898,58 @@
             return cleanText.slice(0, maxLength);
         }
 
+        function wrapReceiptText_(value, width) {
+            const safeWidth = Math.max(8, toPositiveInteger(width));
+            const cleanText = sanitizePrintText_(value, 220);
+            if (!cleanText) {
+                return ['-'];
+            }
+
+            if (cleanText.length <= safeWidth) {
+                return [cleanText];
+            }
+
+            const words = cleanText.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            words.forEach((word) => {
+                if (!word) {
+                    return;
+                }
+
+                if (word.length > safeWidth) {
+                    if (currentLine) {
+                        lines.push(currentLine);
+                        currentLine = '';
+                    }
+
+                    let remaining = word;
+                    while (remaining.length > safeWidth) {
+                        lines.push(remaining.slice(0, safeWidth));
+                        remaining = remaining.slice(safeWidth);
+                    }
+                    currentLine = remaining;
+                    return;
+                }
+
+                const nextLine = currentLine ? `${currentLine} ${word}` : word;
+                if (nextLine.length > safeWidth) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                    return;
+                }
+
+                currentLine = nextLine;
+            });
+
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+
+            return lines.length ? lines : [cleanText.slice(0, safeWidth)];
+        }
+
         function formatReceiptLine_(leftText, rightText, width) {
             const safeRight = sanitizePrintText_(rightText, width - 1);
             const maxLeftLength = Math.max(1, width - safeRight.length - 1);
@@ -1689,13 +1959,17 @@
             return `${safeLeft}${' '.repeat(spacing)}${safeRight}`;
         }
 
+        function formatReceiptAmountCompact_(value) {
+            return formatNumberID(toPositiveInteger(value));
+        }
+
         function formatReceiptAmount_(value) {
-            return `Rp${formatNumberID(toPositiveInteger(value))}`;
+            return `Rp ${formatReceiptAmountCompact_(value)}`;
         }
 
         function resolveApiExecUrl_() {
             try {
-                const queryApi = new URLSearchParams(window.location.search).get('api');
+                const queryApi = resolveQueryParam_('api');
                 if (queryApi) {
                     return normalizeApiUrl_(queryApi);
                 }
@@ -1709,6 +1983,14 @@
             }
 
             return normalizeApiUrl_(DEFAULT_API_EXEC_URL);
+        }
+
+        function resolveQueryParam_(paramName) {
+            try {
+                return new URLSearchParams(window.location.search).get(paramName);
+            } catch (error) {
+                return '';
+            }
         }
 
         function normalizeApiUrl_(urlValue) {
