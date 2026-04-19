@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyTix POS - Premium Mobile</title>
+    <style>
+        :root {
+            --primary: #f97316;
+            --primary-dark: #c2410c;
+            --primary-soft: #fff4ec;
+            --bg-body: #f3f6fb;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --border: #e2e8f0;
+            --radius-lg: 18px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+            --shadow-soft: 0 10px 30px -20px rgba(15, 23, 42, 0.45);
+            --header-height: 76px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            width: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 10% 10%, #ffffff 0%, #f3f6fb 55%, #eef2f9 100%);
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 108px;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .app-shell {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: rgba(243, 246, 251, 0.93);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+            padding: 0.85rem 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #ffedd5, #fff7ed);
+            color: var(--primary);
+            box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.2);
+        }
+
+        .brand-copy h1 {
+            color: var(--text-dark);
+            font-size: 1.04rem;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            font-weight: 800;
+        }
+
+        .brand-copy p {
+            color: var(--text-light);
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-top: 0.1rem;
+        }
+
+        .category-scroll {
+            position: sticky;
+            top: var(--header-height);
+            z-index: 35;
+            display: flex;
+            gap: 0.55rem;
+            padding: 0.75rem 1rem 0.55rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            background: linear-gradient(180deg, rgba(243, 246, 251, 0.96), rgba(243, 246, 251, 0.9));
+        }
+
+        .category-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pill {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-light);
+            border-radius: 999px;
+            padding: 0.52rem 0.82rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex: 0 0 auto;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .pill svg {
+            width: 15px;
+            height: 15px;
+            stroke-width: 2;
+        }
+
+        .pill.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: var(--surface);
+            box-shadow: 0 8px 18px -12px rgba(249, 115, 22, 0.95);
+        }
+
+        .main-content {
+            padding: 0 1rem 1rem;
+        }
+
+        .section-heading {
+            margin: 0.5rem 0 0.85rem;
+        }
+
+        .section-heading h2 {
+            font-size: 0.97rem;
+            letter-spacing: -0.01em;
+            font-weight: 800;
+        }
+
+        .section-heading p {
+            color: var(--text-light);
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        .ticket-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .ticket-card {
+            background: var(--surface);
+            display: flex;
+            border: 1px solid #e6edf7;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .ticket-card:active {
+            transform: scale(0.992);
+            box-shadow: 0 8px 24px -20px rgba(15, 23, 42, 0.8);
+        }
+
+        .ticket-main {
+            padding: 1rem;
+            flex-grow: 1;
+            border-right: 1px dashed #d7e0ec;
+            display: flex;
+            flex-direction: column;
+            gap: 0.36rem;
+        }
+
+        .ticket-meta {
+            width: max-content;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.26rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.63rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .ticket-meta.wisata {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .ticket-meta.kendaraan {
+            background: #ecfdf5;
+            color: #166534;
+        }
+
+        .ticket-meta svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .ticket-main h3 {
+            font-size: 0.96rem;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+
+        .ticket-main p {
+            font-size: 0.77rem;
+            color: var(--text-light);
+            line-height: 1.35;
+        }
+
+        .ticket-side {
+            width: clamp(92px, 28vw, 116px);
+            padding: 0.82rem 0.62rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 0.12rem;
+            background: linear-gradient(170deg, #fff7ed, #ffffff);
+        }
+
+        .price-label {
+            font-size: 0.57rem;
+            color: #94a3b8;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .price-tag {
+            margin-top: 0.04rem;
+            display: inline-flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            gap: 0.14rem;
+            white-space: nowrap;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .price-currency {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #ea580c;
+            transform: translateY(-1px);
+        }
+
+        .price-value {
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-size: 0.92rem;
+            letter-spacing: -0.02em;
+        }
+
+        .price-tag.is-long .price-value {
+            font-size: 0.8rem;
+            letter-spacing: -0.03em;
+        }
+
+        .empty-state {
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .bottom-action {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            padding: 0.65rem 0.8rem calc(0.65rem + env(safe-area-inset-bottom));
+        }
+
+        .bottom-action-inner {
+            margin: 0 auto;
+            max-width: 1080px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 -10px 34px -30px rgba(2, 6, 23, 0.7);
+            padding: 0.62rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.55rem;
+        }
+
+        .cart-trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+        }
+
+        .badge-icon {
+            position: relative;
+            background: var(--primary-soft);
+            padding: 0.58rem;
+            border-radius: 0.75rem;
+            color: var(--primary-dark);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--primary);
+            color: var(--surface);
+            font-size: 0.63rem;
+            font-weight: 800;
+            line-height: 1;
+            padding: 0.22rem 0.36rem;
+            border-radius: 999px;
+            border: 2px solid var(--surface);
+            min-width: 1.15rem;
+            text-align: center;
+        }
+
+        .cart-label {
+            font-size: 0.68rem;
+            color: var(--text-light);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .cart-total {
+            font-weight: 800;
+            font-size: 0.93rem;
+            margin-top: 0.05rem;
+            white-space: nowrap;
+        }
+
+        .btn-checkout {
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            min-width: 124px;
+            background: var(--primary);
+            color: var(--surface);
+            font-size: 0.89rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            box-shadow: 0 8px 20px -14px rgba(249, 115, 22, 0.9);
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .btn-checkout:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-checkout:not(:disabled):active {
+            transform: translateY(1px);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: none;
+            z-index: 1000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-body {
+            background: var(--surface);
+            width: min(100%, 560px);
+            border-radius: 20px 20px 0 0;
+            padding: 1.2rem 1rem 1rem;
+            max-height: 92vh;
+            overflow-y: auto;
+            animation: slide-up 0.26s ease;
+        }
+
+        .modal-center {
+            align-items: center;
+            padding: 0.9rem;
+        }
+
+        .modal-center .receipt-modal-card {
+            width: min(100%, 390px);
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 1rem;
+            animation: fade-up 0.22s ease;
+            box-shadow: 0 18px 40px -30px rgba(15, 23, 42, 0.95);
+        }
+
+        @keyframes slide-up {
+            from {
+                transform: translateY(18px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fade-up {
+            from {
+                transform: translateY(12px) scale(0.99);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-header h3 {
+            font-weight: 800;
+            font-size: 1.03rem;
+            line-height: 1.25;
+        }
+
+        .payment-header p {
+            margin-top: 0.2rem;
+            color: var(--text-light);
+            font-size: 0.77rem;
+            font-weight: 500;
+        }
+
+        .btn-icon {
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            font-size: 1.35rem;
+            line-height: 1;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .payment-summary {
+            border: 1px solid #fee2d6;
+            background: linear-gradient(160deg, #fff7ed, #ffffff);
+            border-radius: 14px;
+            padding: 0.8rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .payment-summary p {
+            font-size: 0.74rem;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+            color: #9a3412;
+            text-transform: uppercase;
+        }
+
+        .payment-summary h2 {
+            margin-top: 0.2rem;
+            font-size: 1.72rem;
+            color: var(--primary-dark);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 0.45rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .input-box {
+            width: 100%;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 0.85rem;
+            text-align: right;
+            font-size: 1.15rem;
+            font-weight: 800;
+            outline: none;
+            transition: 0.16s ease;
+        }
+
+        .input-box:focus {
+            border-color: #fdba74;
+            box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.15);
+        }
+
+        .shortcut-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 0.46rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .shortcuts {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.45rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-shortcut {
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: #334155;
+            border-radius: 10px;
+            padding: 0.58rem 0.4rem;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-shortcut:active {
+            background: #edf2f8;
+        }
+
+        .kembalian-box {
+            border: 1px solid #dcfce7;
+            background: #f0fdf4;
+            border-radius: 12px;
+            padding: 0.72rem 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .kembalian-label {
+            color: #166534;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .kembalian-value {
+            color: var(--success);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 0.85rem;
+            background: var(--primary);
+            color: var(--surface);
+            font-size: 0.93rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .receipt-container {
+            padding: 0.2rem 0;
+        }
+
+        .receipt-paper {
+            border: 1px solid #dbe3ef;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 0.92rem;
+            color: #111827;
+            font-family: 'IBM Plex Mono', 'Consolas', monospace;
+        }
+
+        .receipt-head {
+            text-align: center;
+            margin-bottom: 0.85rem;
+        }
+
+        .receipt-head h3 {
+            font-size: 0.96rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .receipt-head p {
+            margin-top: 0.24rem;
+            font-size: 0.66rem;
+            color: #475569;
+        }
+
+        .receipt-meta {
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 0.56rem;
+            margin-bottom: 0.72rem;
+            background: #f8fafc;
+            display: grid;
+            gap: 0.26rem;
+        }
+
+        .receipt-meta-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.7rem;
+            font-size: 0.65rem;
+        }
+
+        .receipt-meta-line span {
+            color: #64748b;
+        }
+
+        .receipt-meta-line strong {
+            color: #0f172a;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.69rem;
+        }
+
+        .receipt-table th,
+        .receipt-table td {
+            padding: 0.36rem 0;
+            border-bottom: 1px dashed #dbe3ef;
+            vertical-align: top;
+        }
+
+        .receipt-table th {
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 0.62rem;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+        }
+
+        .receipt-table th:last-child,
+        .receipt-table td:last-child {
+            text-align: right;
+        }
+
+        .receipt-item-name {
+            display: block;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.28;
+        }
+
+        .receipt-item-qty {
+            display: block;
+            margin-top: 0.16rem;
+            font-size: 0.61rem;
+            color: #64748b;
+        }
+
+        .receipt-summary {
+            margin-top: 0.62rem;
+            display: grid;
+            gap: 0.26rem;
+            font-size: 0.69rem;
+        }
+
+        .receipt-summary-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.7rem;
+        }
+
+        .receipt-summary-line strong {
+            font-weight: 700;
+        }
+
+        .receipt-summary-line.total {
+            margin-top: 0.28rem;
+            padding-top: 0.4rem;
+            border-top: 1px solid #dbe3ef;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .receipt-summary-line.change strong {
+            color: var(--success);
+        }
+
+        .receipt-footer {
+            margin-top: 0.75rem;
+            text-align: center;
+            font-size: 0.62rem;
+            color: #64748b;
+        }
+
+        .receipt-actions {
+            margin-top: 0.95rem;
+        }
+
+        @media (min-width: 640px) {
+            :root {
+                --header-height: 82px;
+            }
+
+            body {
+                padding-bottom: 120px;
+            }
+
+            .app-header {
+                padding: 1rem 1.15rem;
+            }
+
+            .category-scroll,
+            .main-content {
+                padding-left: 1.15rem;
+                padding-right: 1.15rem;
+            }
+
+            .ticket-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.85rem;
+            }
+
+            .bottom-action {
+                padding-left: 1.2rem;
+                padding-right: 1.2rem;
+            }
+
+            .btn-checkout {
+                min-width: 140px;
+            }
+
+            .modal-body {
+                border-radius: 22px 22px 0 0;
+                padding: 1.35rem;
+            }
+
+            .shortcuts {
+                gap: 0.55rem;
+            }
+        }
+
+        @media (min-width: 920px) {
+            :root {
+                --header-height: 88px;
+            }
+
+            body {
+                padding-bottom: 132px;
+            }
+
+            .app-header {
+                padding: 1rem 1.25rem;
+            }
+
+            .brand-copy h1 {
+                font-size: 1.1rem;
+            }
+
+            .category-scroll,
+            .main-content {
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
+            }
+
+            .ticket-list {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .bottom-action-inner {
+                padding: 0.7rem;
+            }
+
+            .modal {
+                align-items: center;
+                padding: 1.2rem;
+            }
+
+            .modal-body {
+                border-radius: 18px;
+                max-height: min(86vh, 700px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 8.5C3 7.12 4.12 6 5.5 6h13C19.88 6 21 7.12 21 8.5v7c0 1.38-1.12 2.5-2.5 2.5h-13A2.5 2.5 0 0 1 3 15.5z"></path>
+                        <path d="M8 6v12"></path>
+                        <path d="M16 6v12"></path>
+                        <path d="M3 10h18"></path>
+                        <path d="M3 14h18"></path>
+                    </svg>
+                </span>
+                <div class="brand-copy">
+                    <h1>MYTIX PREMIUM</h1>
+                    <p>Point of Sales Ticketing</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="category-scroll" id="category-pills" aria-label="Kategori produk">
+            <button type="button" class="pill active" onclick="filterCategory('all', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="4" width="6" height="6" rx="1"></rect>
+                    <rect x="14" y="4" width="6" height="6" rx="1"></rect>
+                    <rect x="4" y="14" width="6" height="6" rx="1"></rect>
+                    <rect x="14" y="14" width="6" height="6" rx="1"></rect>
+                </svg>
+                <span>Semua</span>
+            </button>
+            <button type="button" class="pill" onclick="filterCategory('wisata', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 21s7-4.4 7-10a7 7 0 1 0-14 0c0 5.6 7 10 7 10z"></path>
+                    <circle cx="12" cy="11" r="2.5"></circle>
+                </svg>
+                <span>Wisata</span>
+            </button>
+            <button type="button" class="pill" onclick="filterCategory('kendaraan', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="4" width="16" height="12" rx="2"></rect>
+                    <path d="M7 16v3"></path>
+                    <path d="M17 16v3"></path>
+                    <circle cx="8" cy="17.5" r="1"></circle>
+                    <circle cx="16" cy="17.5" r="1"></circle>
+                </svg>
+                <span>Kendaraan</span>
+            </button>
+        </section>
+
+        <main class="main-content">
+            <div class="section-heading">
+                <h2>Daftar Tiket</h2>
+                <p>Pilih produk untuk ditambahkan ke transaksi.</p>
+            </div>
+            <div class="ticket-list" id="ticket-grid"></div>
+        </main>
+    </div>
+
+    <div class="bottom-action">
+        <div class="bottom-action-inner">
+            <div class="cart-trigger" id="cart-info">
+                <div class="badge-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="20" r="1"></circle>
+                        <circle cx="18" cy="20" r="1"></circle>
+                        <path d="M2 3h3l2.4 11.5a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 6.5H6.1"></path>
+                    </svg>
+                    <span class="badge-count" id="cart-count">0</span>
+                </div>
+                <div>
+                    <p class="cart-label">Total Belanja</p>
+                    <p id="bottom-total-text" class="cart-total">Rp 0</p>
+                </div>
+            </div>
+            <button id="checkout-button" type="button" class="btn-checkout" onclick="openCheckout()" disabled>Checkout</button>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal" aria-hidden="true">
+        <div class="modal-body" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+            <div class="payment-header">
+                <div>
+                    <h3 id="payment-title">Selesaikan Pembayaran</h3>
+                    <p>Isi nominal bayar lalu konfirmasi transaksi.</p>
+                </div>
+                <button type="button" class="btn-icon" onclick="closeModal()" aria-label="Tutup modal">&times;</button>
+            </div>
+
+            <div class="payment-summary">
+                <p>Total Tagihan</p>
+                <h2 id="modal-grand-total">Rp 0</h2>
+            </div>
+
+            <div class="form-group">
+                <label for="cash-input">Nominal Bayar (Rp)</label>
+                <input type="number" id="cash-input" class="input-box" placeholder="0" inputmode="numeric" min="0" oninput="calculateChange()">
+            </div>
+
+            <p class="shortcut-label">Shortcut Pembayaran</p>
+            <div class="shortcuts">
+                <button type="button" class="btn-shortcut" onclick="setCash('pas')">Uang Pas</button>
+                <button type="button" class="btn-shortcut" onclick="roundTotal()">Bulatkan</button>
+                <button type="button" class="btn-shortcut" onclick="addCash(10000)">+10rb</button>
+                <button type="button" class="btn-shortcut" onclick="addCash(50000)">+50rb</button>
+                <button type="button" class="btn-shortcut" onclick="addCash(100000)">+100rb</button>
+                <button type="button" class="btn-shortcut" onclick="clearCash()">Reset</button>
+            </div>
+
+            <div class="kembalian-box">
+                <span class="kembalian-label">Kembalian</span>
+                <span id="change-text" class="kembalian-value">Rp 0</span>
+            </div>
+
+            <button type="button" class="btn-confirm" onclick="processPayment()">Konfirmasi Pembayaran</button>
+        </div>
+    </div>
+
+    <div id="receipt-modal" class="modal modal-center" aria-hidden="true">
+        <div class="receipt-modal-card" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
+            <div class="receipt-container" id="receipt-content"></div>
+            <div class="receipt-actions">
+                <button type="button" class="btn-confirm" onclick="startNewTransaction()">Transaksi Baru</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 'w1', category: 'wisata', name: 'Tiket Terusan Dufan', price: 275000, desc: 'Akses penuh ke semua wahana.' },
+            { id: 'w2', category: 'wisata', name: 'Tiket Ragunan', price: 15000, desc: 'Tiket masuk dewasa.' },
+            { id: 'w3', category: 'wisata', name: 'Tiket Candi Borobudur', price: 50000, desc: 'Tiket domestik area pelataran.' },
+            { id: 'k1', category: 'kendaraan', name: 'Tiket Bus Trans', price: 3500, desc: 'Tarif flat satu kali jalan.' },
+            { id: 'k2', category: 'kendaraan', name: 'Tiket Damri Bandara', price: 65000, desc: 'Rute eksekutif ke Soekarno-Hatta.' },
+            { id: 'k3', category: 'kendaraan', name: 'Tiket KAI Ekonomi', price: 120000, desc: 'Jakarta - Bandung (KA lokal).' }
+        ];
+
+        const categoryMeta = {
+            wisata: { label: 'Wisata', icon: iconMapPin() },
+            kendaraan: { label: 'Kendaraan', icon: iconBus() }
+        };
+
+        let cart = [];
+        let grandTotal = 0;
+
+        const cashInput = document.getElementById('cash-input');
+        const paymentModal = document.getElementById('payment-modal');
+        const receiptModal = document.getElementById('receipt-modal');
+
+        function init() {
+            renderProducts('all');
+            updateCart();
+
+            paymentModal.addEventListener('click', (event) => {
+                if (event.target === paymentModal) {
+                    closeModal();
+                }
+            });
+
+            receiptModal.addEventListener('click', (event) => {
+                if (event.target === receiptModal) {
+                    closeReceipt();
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeModal();
+                    closeReceipt();
+                }
+            });
+        }
+
+        function filterCategory(category, buttonEl) {
+            document.querySelectorAll('.pill').forEach((pill) => pill.classList.remove('active'));
+            buttonEl.classList.add('active');
+            renderProducts(category);
+        }
+
+        function renderProducts(category) {
+            const grid = document.getElementById('ticket-grid');
+            grid.innerHTML = '';
+
+            const filteredProducts = category === 'all'
+                ? products
+                : products.filter((product) => product.category === category);
+
+            if (!filteredProducts.length) {
+                grid.innerHTML = '<div class="empty-state">Produk untuk kategori ini belum tersedia.</div>';
+                return;
+            }
+
+            filteredProducts.forEach((item) => {
+                const card = document.createElement('article');
+                card.className = 'ticket-card';
+                card.onclick = () => addToCart(item);
+
+                const meta = categoryMeta[item.category] || { label: 'Lainnya', icon: iconGrid() };
+                const compactPrice = formatNumberID(item.price);
+                const longPriceClass = compactPrice.length >= 8 ? 'is-long' : '';
+                card.innerHTML = `
+                    <div class="ticket-main">
+                        <span class="ticket-meta ${item.category}">${meta.icon}${meta.label}</span>
+                        <h3>${escapeHtml(item.name)}</h3>
+                        <p>${escapeHtml(item.desc)}</p>
+                    </div>
+                    <div class="ticket-side">
+                        <span class="price-label">Harga</span>
+                        <span class="price-tag ${longPriceClass}">
+                            <span class="price-currency">Rp</span>
+                            <span class="price-value">${compactPrice}</span>
+                        </span>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function addToCart(item) {
+            const foundItem = cart.find((cartItem) => cartItem.id === item.id);
+            if (foundItem) {
+                foundItem.qty += 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+
+            updateCart();
+            vibrate();
+        }
+
+        function updateCart() {
+            const count = cart.reduce((accumulator, item) => accumulator + item.qty, 0);
+            grandTotal = cart.reduce((accumulator, item) => accumulator + (item.price * item.qty), 0);
+
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('bottom-total-text').innerText = formatIDR(grandTotal);
+            document.getElementById('checkout-button').disabled = count === 0;
+        }
+
+        function openCheckout() {
+            if (cart.length === 0) {
+                alert('Keranjang masih kosong.');
+                return;
+            }
+
+            document.getElementById('modal-grand-total').innerText = formatIDR(grandTotal);
+            paymentModal.classList.add('active');
+            paymentModal.setAttribute('aria-hidden', 'false');
+            calculateChange();
+            cashInput.focus();
+        }
+
+        function closeModal() {
+            paymentModal.classList.remove('active');
+            paymentModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function setCash(type) {
+            if (type === 'pas') {
+                cashInput.value = grandTotal;
+            }
+            calculateChange();
+        }
+
+        function addCash(value) {
+            const current = parseInt(cashInput.value, 10) || 0;
+            cashInput.value = current + value;
+            calculateChange();
+        }
+
+        function clearCash() {
+            cashInput.value = '';
+            calculateChange();
+        }
+
+        function roundTotal() {
+            cashInput.value = Math.ceil(grandTotal / 1000) * 1000;
+            calculateChange();
+        }
+
+        function calculateChange() {
+            const cashValue = parseInt(cashInput.value, 10) || 0;
+            const changeValue = cashValue - grandTotal;
+            const changeEl = document.getElementById('change-text');
+
+            if (changeValue < 0) {
+                changeEl.innerText = `-${formatIDR(Math.abs(changeValue))}`;
+                changeEl.style.color = 'var(--danger)';
+                return;
+            }
+
+            changeEl.innerText = formatIDR(changeValue);
+            changeEl.style.color = 'var(--success)';
+        }
+
+        function processPayment() {
+            const cashValue = parseInt(cashInput.value, 10) || 0;
+            if (cashValue < grandTotal) {
+                alert('Nominal pembayaran kurang.');
+                cashInput.focus();
+                return;
+            }
+
+            const transactionDate = new Date();
+            const transactionId = buildTransactionId(transactionDate);
+            const receiptItems = cart.map((item) => `
+                <tr>
+                    <td>
+                        <span class="receipt-item-name">${escapeHtml(item.name)}</span>
+                        <span class="receipt-item-qty">${item.qty} x ${formatIDR(item.price)}</span>
+                    </td>
+                    <td>${formatIDR(item.price * item.qty)}</td>
+                </tr>
+            `).join('');
+
+            const receiptHTML = `
+                <div class="receipt-paper">
+                    <div class="receipt-head">
+                        <h3 id="receipt-title">MYTIX PREMIUM</h3>
+                        <p>Official Sales Receipt</p>
+                    </div>
+
+                    <div class="receipt-meta">
+                        <div class="receipt-meta-line">
+                            <span>No. Transaksi</span>
+                            <strong>${transactionId}</strong>
+                        </div>
+                        <div class="receipt-meta-line">
+                            <span>Tanggal</span>
+                            <strong>${transactionDate.toLocaleString('id-ID')}</strong>
+                        </div>
+                        <div class="receipt-meta-line">
+                            <span>Metode</span>
+                            <strong>Tunai</strong>
+                        </div>
+                    </div>
+
+                    <table class="receipt-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${receiptItems}
+                        </tbody>
+                    </table>
+
+                    <div class="receipt-summary">
+                        <div class="receipt-summary-line total">
+                            <span>Total</span>
+                            <strong>${formatIDR(grandTotal)}</strong>
+                        </div>
+                        <div class="receipt-summary-line">
+                            <span>Bayar</span>
+                            <strong>${formatIDR(cashValue)}</strong>
+                        </div>
+                        <div class="receipt-summary-line change">
+                            <span>Kembalian</span>
+                            <strong>${formatIDR(cashValue - grandTotal)}</strong>
+                        </div>
+                    </div>
+
+                    <p class="receipt-footer">Terima kasih. Simpan struk ini sebagai bukti transaksi.</p>
+                </div>
+            `;
+
+            document.getElementById('receipt-content').innerHTML = receiptHTML;
+            closeModal();
+            receiptModal.classList.add('active');
+            receiptModal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeReceipt() {
+            receiptModal.classList.remove('active');
+            receiptModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function startNewTransaction() {
+            closeReceipt();
+            clearCash();
+            cart = [];
+            grandTotal = 0;
+            updateCart();
+        }
+
+        function formatIDR(value) {
+            return `Rp ${Number(value).toLocaleString('id-ID')}`;
+        }
+
+        function formatNumberID(value) {
+            return Number(value).toLocaleString('id-ID');
+        }
+
+        function buildTransactionId(dateValue) {
+            const year = dateValue.getFullYear();
+            const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+            const date = String(dateValue.getDate()).padStart(2, '0');
+            const hours = String(dateValue.getHours()).padStart(2, '0');
+            const minutes = String(dateValue.getMinutes()).padStart(2, '0');
+            const seconds = String(dateValue.getSeconds()).padStart(2, '0');
+            return `TRX-${year}${month}${date}-${hours}${minutes}${seconds}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function vibrate() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(40);
+            }
+        }
+
+        function iconMapPin() {
+            return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-4.4 7-10a7 7 0 1 0-14 0c0 5.6 7 10 7 10z"></path><circle cx="12" cy="11" r="2.5"></circle></svg>';
+        }
+
+        function iconBus() {
+            return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="12" rx="2"></rect><path d="M7 16v2"></path><path d="M17 16v2"></path><circle cx="8" cy="18" r="1"></circle><circle cx="16" cy="18" r="1"></circle></svg>';
+        }
+
+        function iconGrid() {
+            return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
