@@ -173,7 +173,7 @@
             background: var(--surface);
             display: flex;
             border: 1px solid #e6edf7;
-            border-radius: var(--radius-md);
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: var(--shadow-soft);
             cursor: pointer;
@@ -187,12 +187,53 @@
         }
 
         .ticket-main {
-            padding: 1rem;
+            padding: 0.78rem 0.78rem 0.8rem 0.85rem;
             flex-grow: 1;
-            border-right: 1px dashed #d7e0ec;
             display: flex;
             flex-direction: column;
-            gap: 0.36rem;
+            gap: 0.26rem;
+            min-width: 0;
+        }
+
+        .ticket-divider {
+            position: relative;
+            width: 16px;
+            flex: 0 0 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .ticket-divider-line {
+            width: 1px;
+            height: calc(100% - 18px);
+            margin: 9px 0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                #d7e0ec 0 4px,
+                transparent 4px 8px
+            );
+        }
+
+        .ticket-divider::before,
+        .ticket-divider::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-body);
+            border: 1px solid #e6edf7;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+        }
+
+        .ticket-divider::before {
+            top: -7px;
+        }
+
+        .ticket-divider::after {
+            bottom: -7px;
         }
 
         .ticket-meta {
@@ -200,9 +241,9 @@
             display: inline-flex;
             align-items: center;
             gap: 0.26rem;
-            padding: 0.2rem 0.5rem;
+            padding: 0.18rem 0.46rem;
             border-radius: 999px;
-            font-size: 0.63rem;
+            font-size: 0.58rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.03em;
@@ -221,30 +262,38 @@
         }
 
         .ticket-meta svg {
-            width: 12px;
-            height: 12px;
+            width: 11px;
+            height: 11px;
         }
 
         .ticket-main h3 {
-            font-size: 0.96rem;
-            line-height: 1.3;
+            font-size: 0.9rem;
+            line-height: 1.25;
             letter-spacing: -0.01em;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .ticket-main p {
-            font-size: 0.77rem;
+            font-size: 0.72rem;
             color: var(--text-light);
-            line-height: 1.35;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .ticket-side {
-            width: clamp(92px, 28vw, 116px);
-            padding: 0.82rem 0.62rem;
+            width: clamp(86px, 26vw, 110px);
+            padding: 0.72rem 0.56rem 0.72rem 0.35rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: flex-end;
-            gap: 0.12rem;
+            gap: 0.1rem;
             background: linear-gradient(170deg, #fff7ed, #ffffff);
         }
 
@@ -772,6 +821,19 @@
                 gap: 0.85rem;
             }
 
+            .ticket-main {
+                padding: 0.82rem 0.84rem 0.85rem 0.9rem;
+            }
+
+            .ticket-divider {
+                width: 17px;
+                flex-basis: 17px;
+            }
+
+            .ticket-side {
+                width: clamp(92px, 22vw, 112px);
+            }
+
             .bottom-action {
                 padding-left: 1.2rem;
                 padding-right: 1.2rem;
@@ -816,6 +878,19 @@
 
             .ticket-list {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .ticket-main {
+                padding: 0.88rem 0.9rem 0.9rem 0.96rem;
+                gap: 0.3rem;
+            }
+
+            .ticket-main h3 {
+                font-size: 0.94rem;
+            }
+
+            .ticket-main p {
+                font-size: 0.74rem;
             }
 
             .bottom-action-inner {
@@ -1039,6 +1114,9 @@
                         <h3>${escapeHtml(item.name)}</h3>
                         <p>${escapeHtml(item.desc)}</p>
                     </div>
+                    <span class="ticket-divider" aria-hidden="true">
+                        <span class="ticket-divider-line"></span>
+                    </span>
                     <div class="ticket-side">
                         <span class="price-label">Harga</span>
                         <span class="price-tag ${longPriceClass}">
