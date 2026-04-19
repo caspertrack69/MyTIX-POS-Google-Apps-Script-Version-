@@ -2,7 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f3f6fb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>MyTix POS - Premium Mobile</title>
     <style>
         :root {
@@ -21,6 +25,8 @@
             --radius-sm: 10px;
             --shadow-soft: 0 10px 30px -20px rgba(15, 23, 42, 0.45);
             --header-height: 76px;
+            --bottom-area-height: 108px;
+            --viewport-font-scale: 1;
         }
 
         * {
@@ -35,13 +41,20 @@
             width: 100%;
         }
 
+        html {
+            font-size: calc(16px * var(--viewport-font-scale));
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
         body {
             min-height: 100vh;
+            min-height: 100dvh;
             background: radial-gradient(circle at 10% 10%, #ffffff 0%, #f3f6fb 55%, #eef2f9 100%);
             color: var(--text-dark);
             font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
             overflow-x: hidden;
-            padding-bottom: 108px;
+            padding-bottom: calc(var(--bottom-area-height) + env(safe-area-inset-bottom));
         }
 
         button,
@@ -800,10 +813,7 @@
         @media (min-width: 640px) {
             :root {
                 --header-height: 82px;
-            }
-
-            body {
-                padding-bottom: 120px;
+                --bottom-area-height: 120px;
             }
 
             .app-header {
@@ -856,10 +866,7 @@
         @media (min-width: 920px) {
             :root {
                 --header-height: 88px;
-            }
-
-            body {
-                padding-bottom: 132px;
+                --bottom-area-height: 132px;
             }
 
             .app-header {
@@ -906,6 +913,26 @@
                 border-radius: 18px;
                 max-height: min(86vh, 700px);
             }
+        }
+
+        body.force-mobile-layout .ticket-list {
+            grid-template-columns: 1fr;
+        }
+
+        body.force-mobile-layout .ticket-main h3 {
+            font-size: 1rem;
+        }
+
+        body.force-mobile-layout .ticket-main p {
+            font-size: 0.78rem;
+        }
+
+        body.force-mobile-layout .ticket-side {
+            width: clamp(98px, 31vw, 124px);
+        }
+
+        body.force-mobile-layout .bottom-action-inner {
+            padding: 0.74rem;
         }
     </style>
 </head>
@@ -1062,8 +1089,10 @@
         const paymentModal = document.getElementById('payment-modal');
         const receiptModal = document.getElementById('receipt-modal');
         const confirmPaymentButton = document.getElementById('confirm-payment-button');
+        const rootEl = document.documentElement;
 
         function init() {
+            applyResponsiveFixes();
             bindModalEvents();
             setGridMessage('Memuat produk...');
             updateCart();
@@ -1071,6 +1100,12 @@
         }
 
         function bindModalEvents() {
+            window.addEventListener('resize', applyResponsiveFixes);
+            window.addEventListener('orientationchange', applyResponsiveFixes);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', applyResponsiveFixes);
+            }
+
             paymentModal.addEventListener('click', (event) => {
                 if (event.target === paymentModal) {
                     closeModal();
@@ -1089,6 +1124,49 @@
                     closeReceipt();
                 }
             });
+        }
+
+        function applyResponsiveFixes() {
+            const viewportWidth = Math.max(
+                window.innerWidth || 0,
+                document.documentElement ? document.documentElement.clientWidth : 0
+            );
+            const isTouchDevice = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+                || navigator.maxTouchPoints > 0;
+            const isEmbeddedFrame = window.top !== window.self;
+            const visualScale = window.visualViewport && Number.isFinite(window.visualViewport.scale)
+                ? window.visualViewport.scale
+                : 1;
+            const isZoomedOutViewport = visualScale > 0 && visualScale < 0.95;
+            const isDesktopLikeViewportOnPhone = isTouchDevice && (
+                isZoomedOutViewport || (isEmbeddedFrame && viewportWidth >= 860)
+            );
+            const shouldForceMobile = isTouchDevice && (viewportWidth <= 700 || isDesktopLikeViewportOnPhone);
+
+            document.body.classList.toggle('force-mobile-layout', shouldForceMobile);
+
+            let fontScale = 1;
+            if (isDesktopLikeViewportOnPhone) {
+                const scaleFromViewport = viewportWidth > 0 ? (viewportWidth / 412) : 1;
+                const scaleFromVisualViewport = isZoomedOutViewport ? (1 / visualScale) : 1;
+                fontScale = Math.min(
+                    Math.max(Math.max(scaleFromViewport, scaleFromVisualViewport), 1),
+                    2.6
+                );
+            }
+            rootEl.style.setProperty('--viewport-font-scale', String(fontScale));
+
+            syncBottomAreaHeight();
+        }
+
+        function syncBottomAreaHeight() {
+            const bottomActionInner = document.querySelector('.bottom-action-inner');
+            if (!bottomActionInner) {
+                return;
+            }
+
+            const measuredHeight = Math.ceil(bottomActionInner.getBoundingClientRect().height + 24);
+            rootEl.style.setProperty('--bottom-area-height', `${measuredHeight}px`);
         }
 
         function loadProducts() {

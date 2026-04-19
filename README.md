@@ -21,7 +21,7 @@ Aplikasi Point of Sales (POS) tiket berbasis **Google Apps Script** dengan UI mo
 ## Struktur Project
 
 ```text
-MyTIX by GAS/
+MyTIX/
 |-- index.html         # UI + client logic + call google.script.run
 |-- Code.gs            # Backend GAS + logic database + validasi transaksi
 |-- appsscript.json    # Konfigurasi runtime & timezone
@@ -196,7 +196,7 @@ Response sukses:
 - Tambah endpoint laporan harian/mingguan.
 - Tambah role-based access untuk operator dan admin.
 
-## CTA Komunitas
+## Komunitas
 
 Mau belajar Google Apps Script bareng, diskusi studi kasus, dan upgrade praktik production-ready?
 
