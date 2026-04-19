@@ -27,6 +27,7 @@ const PAYMENT_LABELS = Object.freeze({
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
     .setTitle('MyTix POS - Premium Mobile');
 }
 

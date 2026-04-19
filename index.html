@@ -26,7 +26,8 @@
             --shadow-soft: 0 10px 30px -20px rgba(15, 23, 42, 0.45);
             --header-height: 76px;
             --bottom-area-height: 108px;
-            --viewport-font-scale: 1;
+            --app-shell-max-width: 1080px;
+            --mobile-font-scale: 1;
         }
 
         * {
@@ -42,7 +43,7 @@
         }
 
         html {
-            font-size: calc(16px * var(--viewport-font-scale));
+            font-size: calc(16px * var(--mobile-font-scale));
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -63,7 +64,7 @@
         }
 
         .app-shell {
-            max-width: 1080px;
+            max-width: var(--app-shell-max-width);
             margin: 0 auto;
         }
 
@@ -84,15 +85,22 @@
         }
 
         .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 2.625rem;
+            height: 2.625rem;
+            border-radius: 0.75rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             background: linear-gradient(145deg, #ffedd5, #fff7ed);
             color: var(--primary);
             box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.2);
+        }
+
+        .brand-mark svg {
+            width: 1.375rem;
+            height: 1.375rem;
+            display: block;
+            flex: 0 0 auto;
         }
 
         .brand-copy h1 {
@@ -133,6 +141,7 @@
             border-radius: 999px;
             padding: 0.52rem 0.82rem;
             font-size: 0.8rem;
+            line-height: 1;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
@@ -143,9 +152,11 @@
         }
 
         .pill svg {
-            width: 15px;
-            height: 15px;
-            stroke-width: 2;
+            width: 1em;
+            height: 1em;
+            stroke-width: 2.2;
+            display: block;
+            flex: 0 0 auto;
         }
 
         .pill.active {
@@ -257,6 +268,7 @@
             padding: 0.18rem 0.46rem;
             border-radius: 999px;
             font-size: 0.58rem;
+            line-height: 1;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.03em;
@@ -275,8 +287,10 @@
         }
 
         .ticket-meta svg {
-            width: 11px;
-            height: 11px;
+            width: 0.95em;
+            height: 0.95em;
+            display: block;
+            flex: 0 0 auto;
         }
 
         .ticket-main h3 {
@@ -398,6 +412,13 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .badge-icon svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            display: block;
+            flex: 0 0 auto;
         }
 
         .badge-count {
@@ -915,24 +936,51 @@
             }
         }
 
-        body.force-mobile-layout .ticket-list {
+        body.mobile-view {
+            --app-shell-max-width: 480px;
+        }
+
+        body.mobile-view.mobile-desktop-viewport {
+            --app-shell-max-width: calc(100vw - 1.72rem);
+        }
+
+        body.mobile-view .app-header,
+        body.mobile-view .category-scroll,
+        body.mobile-view .main-content {
+            padding-left: 0.86rem;
+            padding-right: 0.86rem;
+        }
+
+        body.mobile-view .ticket-list {
             grid-template-columns: 1fr;
+            gap: 0.72rem;
         }
 
-        body.force-mobile-layout .ticket-main h3 {
-            font-size: 1rem;
+        body.mobile-view .ticket-main h3 {
+            font-size: 0.95rem;
         }
 
-        body.force-mobile-layout .ticket-main p {
-            font-size: 0.78rem;
+        body.mobile-view .ticket-main p {
+            font-size: 0.75rem;
         }
 
-        body.force-mobile-layout .ticket-side {
-            width: clamp(98px, 31vw, 124px);
+        body.mobile-view .ticket-side {
+            width: clamp(96px, 30vw, 124px);
         }
 
-        body.force-mobile-layout .bottom-action-inner {
-            padding: 0.74rem;
+        body.mobile-view .bottom-action {
+            padding-left: 0.86rem;
+            padding-right: 0.86rem;
+        }
+
+        body.mobile-view .bottom-action-inner {
+            max-width: var(--app-shell-max-width);
+        }
+
+        body.mobile-view .btn-checkout {
+            min-width: 110px;
+            padding-left: 0.9rem;
+            padding-right: 0.9rem;
         }
     </style>
 </head>
@@ -1093,10 +1141,17 @@
 
         function init() {
             applyResponsiveFixes();
+            scheduleResponsiveRechecks();
             bindModalEvents();
             setGridMessage('Memuat produk...');
             updateCart();
             loadProducts();
+        }
+
+        function scheduleResponsiveRechecks() {
+            [120, 420, 1000, 2200].forEach((delayMs) => {
+                window.setTimeout(applyResponsiveFixes, delayMs);
+            });
         }
 
         function bindModalEvents() {
@@ -1127,36 +1182,47 @@
         }
 
         function applyResponsiveFixes() {
-            const viewportWidth = Math.max(
+            const isMobileView = shouldUseMobileView_();
+            const viewportScale = isMobileView ? getMobileViewportScale_() : 1;
+            const hasDesktopViewportMismatch = viewportScale > 1.1;
+
+            document.body.classList.toggle('mobile-view', isMobileView);
+            document.body.classList.toggle('mobile-desktop-viewport', isMobileView && hasDesktopViewportMismatch);
+            rootEl.style.setProperty('--mobile-font-scale', String(viewportScale));
+            syncBottomAreaHeight();
+        }
+
+        function shouldUseMobileView_() {
+            const ua = navigator.userAgent || '';
+            const hasMobileUA = /Android|iPhone|iPod|IEMobile|Windows Phone|Mobile/i.test(ua);
+            const isTouchDevice = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+                || navigator.maxTouchPoints > 0;
+            const shortestScreenSide = Math.min(window.screen.width || 0, window.screen.height || 0);
+
+            if (hasMobileUA) {
+                return true;
+            }
+
+            return isTouchDevice && shortestScreenSide > 0 && shortestScreenSide <= 1024;
+        }
+
+        function getMobileViewportScale_() {
+            const layoutViewportWidth = Math.max(
                 window.innerWidth || 0,
                 document.documentElement ? document.documentElement.clientWidth : 0
             );
-            const isTouchDevice = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
-                || navigator.maxTouchPoints > 0;
-            const isEmbeddedFrame = window.top !== window.self;
-            const visualScale = window.visualViewport && Number.isFinite(window.visualViewport.scale)
-                ? window.visualViewport.scale
-                : 1;
-            const isZoomedOutViewport = visualScale > 0 && visualScale < 0.95;
-            const isDesktopLikeViewportOnPhone = isTouchDevice && (
-                isZoomedOutViewport || (isEmbeddedFrame && viewportWidth >= 860)
-            );
-            const shouldForceMobile = isTouchDevice && (viewportWidth <= 700 || isDesktopLikeViewportOnPhone);
+            const shortestScreenSide = Math.min(window.screen.width || 0, window.screen.height || 0);
 
-            document.body.classList.toggle('force-mobile-layout', shouldForceMobile);
-
-            let fontScale = 1;
-            if (isDesktopLikeViewportOnPhone) {
-                const scaleFromViewport = viewportWidth > 0 ? (viewportWidth / 412) : 1;
-                const scaleFromVisualViewport = isZoomedOutViewport ? (1 / visualScale) : 1;
-                fontScale = Math.min(
-                    Math.max(Math.max(scaleFromViewport, scaleFromVisualViewport), 1),
-                    2.6
-                );
+            if (!layoutViewportWidth || !shortestScreenSide) {
+                return 1;
             }
-            rootEl.style.setProperty('--viewport-font-scale', String(fontScale));
 
-            syncBottomAreaHeight();
+            const ratio = layoutViewportWidth / shortestScreenSide;
+            if (ratio <= 1.1) {
+                return 1;
+            }
+
+            return Math.min(Math.max(ratio, 1), 2.6);
         }
 
         function syncBottomAreaHeight() {
